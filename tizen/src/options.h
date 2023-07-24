@@ -1,61 +1,61 @@
 #ifndef FLUTTER_PLUGIN_WORKMANAGER_OPTIONS_H_
 #define FLUTTER_PLUGIN_WORKMANAGER_OPTIONS_H_
 
-enum class ExistingWorkPolicy { replace, keep, append, update };
+enum class ExistingWorkPolicy { kReplace, kKeep, kAppend, kUpdate };
 
 enum class NetworkType {
-    connected,
-    metered,
-    not_required,
-    not_roaming,
-    unmetered,
-    temporarily_unmetered,
+    kConnected,
+    kMetered,
+    kNotRequired,
+    kNotRoaming,
+    kUnmetered,
+    kTemporarilyUnmetered,
 };
 
 enum class OutOfQuotaPolicy {
-    run_as_non_expedited_work_request,
-    drop_work_request,
+    kRunAsNonExpeditedWorkRequest,
+    kDropWorkRequest,
 };
 
-enum class BackoffPolicy { exponential, linear };
+enum class BackoffPolicy { kExponential, kLinear };
 
 class Constraints {
    public:
-    const NetworkType networkType;
+    const NetworkType network_type_;
 
-    const bool requiresBatteryNotLow;
+    const bool requires_battery_not_low_;
 
-    const bool requiresCharging;
+    const bool requires_charging_;
 
-    const bool requiresDeviceIdle;  // Not supported
+    const bool requires_device_idle_;  // Not supported
 
-    const bool requiresStorageNotLow;  // Not supported
+    const bool requires_storage_not_low_;  // Not supported
 
     Constraints(NetworkType networkType, bool requiresBatteryNotLow = false,
                 bool requiresCharging = false, bool requiresDeviceIdle = false,
                 bool requiresStorageNotLow = false)
-        : networkType(networkType),
-          requiresBatteryNotLow(requiresBatteryNotLow),
-          requiresCharging(requiresCharging),
-          requiresDeviceIdle(requiresDeviceIdle),
-          requiresStorageNotLow(requiresStorageNotLow) {}
+        : network_type_(networkType),
+          requires_battery_not_low_(requiresBatteryNotLow),
+          requires_charging_(requiresCharging),
+          requires_device_idle_(requiresDeviceIdle),
+          requires_storage_not_low_(requiresStorageNotLow) {}
 };
 
 class TaskType {
    public:
     TaskType(int32_t minimumbackOffDelay)
-        : minimumbackOffDelay(minimumbackOffDelay){};
-    int32_t minimumbackOffDelay;
-    enum { ONE_OFF = 10000, PERIODIC = 15 * 60 * 1000 };
+        : minimum_backoff_delay_(minimumbackOffDelay){};
+    int32_t minimum_backoff_delay_;
+    enum { kOneOff = 10000, kPeriodic = 15 * 60 * 1000 };
 };
 
 class BackoffPolicyTaskConfig {
    public:
-    BackoffPolicy backoffPolicy;
+    BackoffPolicy backoff_policy_;
 
-    int32_t requestbackoffDelay;
-    int32_t minbackoffMills;
-    int32_t backoffDelay;
+    int32_t request_backoff_delay_;
+    int32_t min_backoff_mills_;
+    int32_t backoff_delay_;
 };
 
 #endif  // FLUTTER_PLUGIN_WORKMANAGER_OPTIONS_H_

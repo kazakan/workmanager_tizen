@@ -7,12 +7,7 @@
 
 #include "options.h"
 
-class WorkManagerCall {
-   public:
-    WorkManagerCall(){};
-};
-
-class InitializeTask : public WorkManagerCall {
+class InitializeTask {
    public:
     InitializeTask(int32_t callBackDispathcerHandlerKey, bool isInDebugMode)
         : callBackDispathcerHandlerKey(callBackDispathcerHandlerKey),
@@ -22,35 +17,35 @@ class InitializeTask : public WorkManagerCall {
     bool isInDebugMode = false;
 };
 
-class RegisterTask : public WorkManagerCall {
+class RegisterTask {
    public:
     RegisterTask(bool isInDebugMode, std::string uniquename,
                  std::string taskname, std::optional<std::string> tag,
                  int32_t initialDelaySeconds,
                  std::optional<Constraints> constraintsConfig,
                  std::optional<std::string> payload)
-        : isInDebugMode(isInDebugMode),
-          uniquename(uniquename),
-          taskname(taskname),
-          tag(tag),
-          initialDelaySeconds(initialDelaySeconds),
-          constraintsConfig(constraintsConfig),
-          payload(payload){};
+        : is_in_debug_mode_(isInDebugMode),
+          unique_name_(uniquename),
+          task_name_(taskname),
+          tag_(tag),
+          initial_delay_seconds_(initialDelaySeconds),
+          constraints_config_(constraintsConfig),
+          payload_(payload){};
 
-    bool isInDebugMode;
-    std::string uniquename;
-    std::string taskname;
-    std::optional<std::string> tag;
-    int32_t initialDelaySeconds;
-    std::optional<Constraints> constraintsConfig;
-    std::optional<std::string> payload;
+    bool is_in_debug_mode_;
+    std::string unique_name_;
+    std::string task_name_;
+    std::optional<std::string> tag_;
+    int32_t initial_delay_seconds_;
+    std::optional<Constraints> constraints_config_;
+    std::optional<std::string> payload_;
 };
 
 class OneoffTask : public RegisterTask {
    public:
-    ExistingWorkPolicy existingWorkPolicy;
-    std::optional<BackoffPolicyTaskConfig> backoffPolicyConfig;
-    std::optional<OutOfQuotaPolicy> outOfQuotaPolicy;
+    ExistingWorkPolicy existing_work_policy_;
+    std::optional<BackoffPolicyTaskConfig> backoff_policy_config_;
+    std::optional<OutOfQuotaPolicy> out_of_quota_policy_;
 
     OneoffTask(bool isInDebugMode, std::string uniqueName, std::string taskName,
                ExistingWorkPolicy existingWorkPolicy,
@@ -61,8 +56,8 @@ class OneoffTask : public RegisterTask {
                std::optional<std::string> payload = std::nullopt)
         : RegisterTask(isInDebugMode, uniqueName, taskName, tag,
                        initialDelaySeconds, constraintsConfig, payload),
-          backoffPolicyConfig(backoffPolicyConfig),
-          outOfQuotaPolicy(outOfQuotaPolicy){};
+          backoff_policy_config_(backoffPolicyConfig),
+          out_of_quota_policy_(outOfQuotaPolicy){};
 };
 
 class PeriodicTask : public RegisterTask {
@@ -77,35 +72,35 @@ class PeriodicTask : public RegisterTask {
                  std::optional<std::string> payload = std::nullopt)
         : RegisterTask(isInDebugMode, uniqueName, taskName, tag,
                        initialDelaySeconds, constraintsConfig, payload),
-          frequencyInSeconds(frequencyInSeconds),
-          backoffPolicyConfig(backoffPolicyConfig),
-          outOfQuotaPolicy(outOfQuotaPolicy){};
+          frequency_in_seconds_(frequencyInSeconds),
+          backoff_policy_config_(backoffPolicyConfig),
+          out_of_quota_policy_(outOfQuotaPolicy){};
 
-    ExistingWorkPolicy existingWorkPolicy;
-    std::optional<BackoffPolicyTaskConfig> backoffPolicyConfig;
-    std::optional<OutOfQuotaPolicy> outOfQuotaPolicy;
-    int32_t frequencyInSeconds;
+    ExistingWorkPolicy existing_work_policy_;
+    std::optional<BackoffPolicyTaskConfig> backoff_policy_config_;
+    std::optional<OutOfQuotaPolicy> out_of_quota_policy_;
+    int32_t frequency_in_seconds_;
 };
 
-class CancelTask : public WorkManagerCall {};
+class CancelTask {};
 
 class CancelByTagTask : public CancelTask {
    public:
-    CancelByTagTask(std::string tag) : tag(tag){};
-    std::string tag;
+    CancelByTagTask(std::string tag) : tag_(tag){};
+    std::string tag_;
 };
 
 class CancelByUniqueNameTask : public CancelTask {
    public:
-    CancelByUniqueNameTask(std::string uniqueName) : uniqueName(uniqueName){};
-    std::string uniqueName;
+    CancelByUniqueNameTask(std::string uniqueName) : uniqueName_(uniqueName){};
+    std::string uniqueName_;
 };
 
-class UnknownTask : public WorkManagerCall {};
+class UnknownTask {};
 
-class FailedTask : public WorkManagerCall {
+class FailedTask  {
    public:
-    std::string code;
+    std::string code_;
 };
 
 #endif  // FLUTTER_PLUGIN_WORKMANAGER_TASKS_H_

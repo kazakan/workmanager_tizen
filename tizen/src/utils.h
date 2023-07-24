@@ -3,6 +3,7 @@
 
 #include <flutter/encodable_value.h>
 
+#include <cctype>
 #include <optional>
 
 template <typename T>
@@ -30,8 +31,10 @@ static std::optional<T> GetOrNullFromEncodableMap(
     return std::nullopt;
 }
 
-void upper(std::string &str) {
-    for (auto &c : str) c = toupper(c);
+void Upper(std::string &str) {
+    for (auto &c : str) {
+        c = toupper(c);
+    }
 }
 
-#endif // FLUTTER_PLUGIN_WORKMANAGER_UTILS_H_
+#endif  // FLUTTER_PLUGIN_WORKMANAGER_UTILS_H_

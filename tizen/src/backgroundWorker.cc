@@ -7,7 +7,7 @@
 #include "constants.h"
 
 void BackgroundWorker::jobStartHook(job_info_h job_info, void* userData) {
-    char* job_id;
+    char* job_id = nullptr;
     job_info_get_job_id(job_info, &job_id);
 
     // payload key
@@ -21,18 +21,18 @@ void BackgroundWorker::jobStartHook(job_info_h job_info, void* userData) {
     // bg channel initialized
     // "backgroundChannelInitialized"
 
-    // parse arguments from userData
+    // todo parse arguments from userData
 
     //
 
     std::string payload(static_cast<char*>(userData));
 
     flutter::EncodableMap arg = {
-        {flutter::EncodableValue(kBgChannelInputDataKey),
+        {flutter::EncodableValue(constants::keys::kBgChannelInputDataKey),
          flutter::EncodableValue(payload)},
-        {flutter::EncodableValue(kBgChannelDartTaskKey),
+        {flutter::EncodableValue(constants::keys::kBgChannelDartTaskKey),
          flutter::EncodableValue(std::string(job_id))}};
 
-    channel->InvokeMethod(kOnResultSendMethod,
+    channel->InvokeMethod(constants::methods::kOnResultSendMethod,
                           std::make_unique<flutter::EncodableValue>(arg));
 };
