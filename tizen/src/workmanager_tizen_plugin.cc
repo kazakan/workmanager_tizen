@@ -20,35 +20,32 @@
 namespace {
 
 typedef flutter::MethodCall<flutter::EncodableValue> FlMethodCall;
-typedef std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>> FlMethodResultRef;
+typedef std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>>
+    FlMethodResultRef;
 
 class WorkmanagerTizenPlugin : public flutter::Plugin {
    public:
     static void RegisterWithRegistrar(flutter::PluginRegistrar* registrar) {
+        auto plugin = std::make_unique<WorkmanagerTizenPlugin>();
+
         auto foregroundChannel =
             std::make_unique<flutter::MethodChannel<flutter::EncodableValue>>(
                 registrar->messenger(), constants::kForegroundChannelName,
                 &flutter::StandardMethodCodec::GetInstance());
 
-        auto backgroundChannel =
+        plugin->background_channel_ =
             std::make_unique<flutter::MethodChannel<flutter::EncodableValue>>(
                 registrar->messenger(), constants::kBackgroundChannelName,
                 &flutter::StandardMethodCodec::GetInstance());
-
-        auto plugin = std::make_unique<WorkmanagerTizenPlugin>();
 
         foregroundChannel->SetMethodCallHandler(
             [plugin_pointer = plugin.get()](const auto& call, auto result) {
                 plugin_pointer->WorkmanagerHandler(call, std::move(result));
             });
 
-        backgroundChannel->SetMethodCallHandler(
-            [plugin_pointer = plugin.get(),
-             backgroundChannel = std::move(backgroundChannel)](const auto& call,
-                                                               auto result) {
-                plugin_pointer->BackgroundHandler(call, std::move(result),
-                                                  std::move(backgroundChannel));
-                // TODO : fix passing backgroundChannel into handler
+        plugin->background_channel_->SetMethodCallHandler(
+            [plugin_pointer = plugin.get()](const auto& call, auto result) {
+                plugin_pointer->BackgroundHandler(call, std::move(result));
             });
 
         registrar->AddPlugin(std::move(plugin));
@@ -57,6 +54,10 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
     WorkmanagerTizenPlugin() {}
 
     virtual ~WorkmanagerTizenPlugin() {}
+
+   private:
+    std::unique_ptr<flutter::MethodChannel<flutter::EncodableValue>>
+        background_channel_;
 
     void WorkmanagerHandler(const FlMethodCall& call,
                             FlMethodResultRef result) {
@@ -309,10 +310,7 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
         result->Success();
     }
 
-    void BackgroundHandler(
-        const FlMethodCall& call, FlMethodResultRef result,
-        std::unique_ptr<flutter::MethodChannel<flutter::EncodableValue>>
-            backgroundChannel) {
+    void BackgroundHandler(const FlMethodCall& call, FlMethodResultRef result) {
         LOG_DEBUG("Background call name =%s", call.method_name().c_str());
 
         if (call.method_name() ==
