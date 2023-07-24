@@ -13,6 +13,8 @@
 #include "tasks.h"
 #include "utils.h"
 
+typedef flutter::MethodCall<flutter::EncodableValue> FlMethodCall;
+
 class PossibleWorkManagerCall {
    public:
     std::string rawMethodName;

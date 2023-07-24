@@ -19,6 +19,9 @@
 
 namespace {
 
+typedef flutter::MethodCall<flutter::EncodableValue> FlMethodCall;
+typedef std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>> FlMethodResultRef;
+
 class WorkmanagerTizenPlugin : public flutter::Plugin {
    public:
     static void RegisterWithRegistrar(flutter::PluginRegistrar* registrar) {
