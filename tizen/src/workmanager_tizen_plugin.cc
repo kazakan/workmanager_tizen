@@ -14,7 +14,6 @@
 #include "extractor.h"
 #include "job_scheduler_wrapper.h"
 #include "log.h"
-#include "sharedpreference_helper.h"
 
 namespace {
 

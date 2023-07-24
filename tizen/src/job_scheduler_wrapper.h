@@ -48,7 +48,7 @@ class JobScheduler {
     std::vector<std::string> GetAllJobs() {
         std::vector<std::string> ret;
 
-        int ret = job_scheduler_foreach_job(
+        int code = job_scheduler_foreach_job(
             [](job_info_h job_info, void* user_data) {
                 char* job_id = NULL;
 
