@@ -2,7 +2,9 @@
 #define FLUTTER_PLUGIN_WORKMANAGER_CONSTANTS_H_
 
 namespace constants {
+
 namespace methods {
+
 const char *kInitialize = "initialize";
 const char *kRegisterOneOffTask = "registerOneOffTask";
 const char *kRegisterPeriodicTask = "registerPeriodicTask";
@@ -45,10 +47,12 @@ const char *kCancelTaskUniqueNameKey = "uniqueName";
 const char *kBgChannelInputDataKey = "be.tramckrijte.workmanager.INPUT_DATA";
 const char *kBgChannelDartTaskKey = "be.tramckrijte.workmanager.DART_TASK";
 
-const char* kDispatcherHandleKey = "WMANAGER_TIZEN_DISPATCHER_HANDLE_KEY";
+const char *kDispatcherHandleKey = "WMANAGER_TIZEN_DISPATCHER_HANDLE_KEY";
+
 }  // namespace keys
 
 namespace values {
+
 // NetworkType
 const char *kConnected = "CONNECTED";
 const char *kMetered = "METERED";
@@ -70,6 +74,7 @@ const char *kLinear = "LINEAR";
 // OutofQuotaPolicy
 const char *kRunAsNonExpectedWorkRequest = "RUN_AS_NON_EXPEDITED_WORK_REQUEST";
 const char *kDropWorkRequest = "DROP_WORK_REQUEST";
+
 }  // namespace values
 
 const char *kForegroundChannelName =
@@ -90,7 +95,6 @@ const char *kNotInitializedErrMsg =
     "The `callbackDispatcher` is a top level function. See example in "
     "repository.";
 
-    
 }  // namespace constants
 
 #endif
