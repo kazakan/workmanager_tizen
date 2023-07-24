@@ -19,6 +19,7 @@ const char *kBackgroundChannelInitialized = "backgroundChannelInitialized";
 }  // namespace methods
 
 namespace keys {
+
 const char *kIsInDebugModeKey = "isInDebugMode";
 const char *kCallhandlekey = "callbackHandle";
 
