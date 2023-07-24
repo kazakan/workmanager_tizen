@@ -13,7 +13,7 @@ class BackgroundWorker {
     static std::unique_ptr<flutter::MethodChannel<flutter::EncodableValue>>
         channel;
 
-    static void jobStartHook(job_info_h job_info, void* userData);
+    static void JobStartHook(job_info_h job_info, void* user_data);
 };
 
 #endif

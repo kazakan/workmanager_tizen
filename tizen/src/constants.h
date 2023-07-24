@@ -34,7 +34,7 @@ const char *kDeviceidlekey = "requiresDeviceIdle";
 const char *kStorageNotLowKey = "requiresStorageNotLow";
 
 const char *kInitialDelaySecondsKey = "initialDelaySeconds";
-const char *kbackOffPolicyTypeKey = "backoffPolicyType";
+const char *kBackOffPolicyTypeKey = "backoffPolicyType";
 const char *kBackOffPolicyDelayMillisKey = "backoffDelayInMilliseconds";
 const char *kOutofQuotaPolicyKey = "outOfQuotaPolicy";
 const char *kPayloadKey = "inputData";

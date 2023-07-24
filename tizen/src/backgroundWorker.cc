@@ -6,7 +6,7 @@
 
 #include "constants.h"
 
-void BackgroundWorker::jobStartHook(job_info_h job_info, void* userData) {
+void BackgroundWorker::JobStartHook(job_info_h job_info, void* user_data) {
     char* job_id = nullptr;
     job_info_get_job_id(job_info, &job_id);
 
@@ -25,7 +25,7 @@ void BackgroundWorker::jobStartHook(job_info_h job_info, void* userData) {
 
     //
 
-    std::string payload(static_cast<char*>(userData));
+    std::string payload(static_cast<char*>(user_data));
 
     flutter::EncodableMap arg = {
         {flutter::EncodableValue(constants::keys::kBgChannelInputDataKey),

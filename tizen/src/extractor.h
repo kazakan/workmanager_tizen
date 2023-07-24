@@ -3,7 +3,6 @@
 
 #include <flutter/encodable_value.h>
 #include <flutter/method_call.h>
-#include <flutter/method_channel.h>
 
 #include <string>
 
@@ -17,13 +16,13 @@ typedef flutter::MethodCall<flutter::EncodableValue> FlMethodCall;
 
 class PossibleWorkManagerCall {
    public:
-    std::string rawMethodName;
+    std::string raw_method_name_;
 
     static PossibleWorkManagerCall fromRawMethodName(
-        const std::string &methodName);
+        const std::string &method_name);
 };
 
-ExistingWorkPolicy extractExistingWorkPolicyFromCall(const FlMethodCall &call) {
+ExistingWorkPolicy ExtractExistingWorkPolicyFromCall(const FlMethodCall &call) {
     std::string value;
     const auto &args = *call.arguments();
     flutter::EncodableMap map = std::get<flutter::EncodableMap>(args);
@@ -46,41 +45,41 @@ ExistingWorkPolicy extractExistingWorkPolicyFromCall(const FlMethodCall &call) {
     return ExistingWorkPolicy::kKeep;
 }
 
-std::optional<BackoffPolicyTaskConfig> extractBackoffPolicyConfigFromCall(
-    const FlMethodCall &call, TaskType taskType) {
+std::optional<BackoffPolicyTaskConfig> ExtractBackoffPolicyConfigFromCall(
+    const FlMethodCall &call, TaskType task_type) {
     const auto &args = *call.arguments();
     flutter::EncodableMap map = std::get<flutter::EncodableMap>(args);
 
     std::string value;
-    if (!GetValueFromEncodableMap(&map, constants::keys::kbackOffPolicyTypeKey,
+    if (!GetValueFromEncodableMap(&map, constants::keys::kBackOffPolicyTypeKey,
                                   value)) {
         return std::nullopt;
     }
 
-    BackoffPolicy backoffPolicy;
+    BackoffPolicy backoff_policy;
 
     if (value == constants::values::kExponential) {
-        backoffPolicy = BackoffPolicy::kExponential;
+        backoff_policy = BackoffPolicy::kExponential;
     } else {
-        backoffPolicy = BackoffPolicy::kLinear;
+        backoff_policy = BackoffPolicy::kLinear;
     }
 
-    int32_t requestedBackoffDelay =
+    int32_t requested_backoff_delay =
         GetOrNullFromEncodableMap<int32_t>(
             &map, constants::keys::kBackOffPolicyDelayMillisKey)
             .value_or(15 * 6 * 1000) /
         1000;
-    int32_t minimumBackOffDelay = taskType.minimum_backoff_delay_;
+    int32_t minimum_backoff_delay = task_type.minimum_backoff_delay_;
 
     BackoffPolicyTaskConfig ret;
-    ret.backoff_policy_ = backoffPolicy;
-    ret.request_backoff_delay_ = requestedBackoffDelay;
-    ret.min_backoff_mills_ = minimumBackOffDelay;
+    ret.backoff_policy_ = backoff_policy;
+    ret.request_backoff_delay_ = requested_backoff_delay;
+    ret.min_backoff_mills_ = minimum_backoff_delay;
 
     return ret;
 }
 
-std::optional<OutOfQuotaPolicy> extractOutOfQuotaPolicyFromCall(
+std::optional<OutOfQuotaPolicy> ExtractOutOfQuotaPolicyFromCall(
     const FlMethodCall &call) {
     const auto &args = *call.arguments();
     flutter::EncodableMap map = std::get<flutter::EncodableMap>(args);
@@ -101,7 +100,7 @@ std::optional<OutOfQuotaPolicy> extractOutOfQuotaPolicyFromCall(
     return std::nullopt;
 }
 
-NetworkType extractNetworkTypeFromCall(const FlMethodCall &call) {
+NetworkType ExtractNetworkTypeFromCall(const FlMethodCall &call) {
     const auto &args = *call.arguments();
     flutter::EncodableMap map = std::get<flutter::EncodableMap>(args);
 
@@ -128,26 +127,26 @@ NetworkType extractNetworkTypeFromCall(const FlMethodCall &call) {
     return NetworkType::kNotRequired;
 }
 
-Constraints extractConstraintConfigFromCall(const FlMethodCall &call) {
+Constraints ExtractConstraintConfigFromCall(const FlMethodCall &call) {
     const auto &args = *call.arguments();
     flutter::EncodableMap map = std::get<flutter::EncodableMap>(args);
 
-    NetworkType requestedNetworktype = extractNetworkTypeFromCall(call);
-    bool requiresBatteryNotLow = GetOrNullFromEncodableMap<bool>(
+    NetworkType requested_network_type = ExtractNetworkTypeFromCall(call);
+    bool requires_battery_not_low = GetOrNullFromEncodableMap<bool>(
                                      &map, constants::keys::kBatteryNotLowKey)
                                      .value_or(false);
-    bool requiresCharging =
+    bool requires_charging =
         GetOrNullFromEncodableMap<bool>(&map, constants::keys::kChargingKey)
             .value_or(false);
-    bool requiresDeviceidle =
+    bool requires_device_idle =
         GetOrNullFromEncodableMap<bool>(&map, constants::keys::kDeviceidlekey)
             .value_or(false);
-    bool requiresStorageNotLow = GetOrNullFromEncodableMap<bool>(
+    bool requires_storage_not_low = GetOrNullFromEncodableMap<bool>(
                                      &map, constants::keys::kStorageNotLowKey)
                                      .value_or(false);
 
-    return Constraints(requestedNetworktype, requiresBatteryNotLow,
-                       requiresCharging, requiresStorageNotLow);
+    return Constraints(requested_network_type, requires_battery_not_low,
+                       requires_charging, requires_storage_not_low);
 }
 
 #endif

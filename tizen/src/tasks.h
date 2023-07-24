@@ -9,27 +9,27 @@
 
 class InitializeTask {
    public:
-    InitializeTask(int32_t callBackDispathcerHandlerKey, bool isInDebugMode)
-        : callBackDispathcerHandlerKey(callBackDispathcerHandlerKey),
-          isInDebugMode(isInDebugMode){};
+    InitializeTask(int32_t callback_dispathcer_handler_key, bool is_in_debug_mode)
+        : callback_dispathcer_handler_key_(callback_dispathcer_handler_key),
+          is_in_debug_mode_(is_in_debug_mode){};
 
-    int32_t callBackDispathcerHandlerKey = 0;
-    bool isInDebugMode = false;
+    int32_t callback_dispathcer_handler_key_ = 0;
+    bool is_in_debug_mode_ = false;
 };
 
 class RegisterTask {
    public:
-    RegisterTask(bool isInDebugMode, std::string uniquename,
-                 std::string taskname, std::optional<std::string> tag,
-                 int32_t initialDelaySeconds,
-                 std::optional<Constraints> constraintsConfig,
+    RegisterTask(bool is_in_debug_mode, std::string unique_name,
+                 std::string task_name, std::optional<std::string> tag,
+                 int32_t initial_delay_seconds,
+                 std::optional<Constraints> constraints_config,
                  std::optional<std::string> payload)
-        : is_in_debug_mode_(isInDebugMode),
-          unique_name_(uniquename),
-          task_name_(taskname),
+        : is_in_debug_mode_(is_in_debug_mode),
+          unique_name_(unique_name),
+          task_name_(task_name),
           tag_(tag),
-          initial_delay_seconds_(initialDelaySeconds),
-          constraints_config_(constraintsConfig),
+          initial_delay_seconds_(initial_delay_seconds),
+          constraints_config_(constraints_config),
           payload_(payload){};
 
     bool is_in_debug_mode_;
@@ -47,34 +47,34 @@ class OneoffTask : public RegisterTask {
     std::optional<BackoffPolicyTaskConfig> backoff_policy_config_;
     std::optional<OutOfQuotaPolicy> out_of_quota_policy_;
 
-    OneoffTask(bool isInDebugMode, std::string uniqueName, std::string taskName,
-               ExistingWorkPolicy existingWorkPolicy,
-               int32_t initialDelaySeconds, Constraints constraintsConfig,
-               std::optional<BackoffPolicyTaskConfig> backoffPolicyConfig,
-               std::optional<OutOfQuotaPolicy> outOfQuotaPolicy,
+    OneoffTask(bool is_in_debug_mode, std::string unique_name, std::string task_name,
+               ExistingWorkPolicy existing_work_policy,
+               int32_t initial_delay_seconds, Constraints constraints_config,
+               std::optional<BackoffPolicyTaskConfig> backoff_policy_config,
+               std::optional<OutOfQuotaPolicy> out_of_quota_policy,
                std::optional<std::string> tag = std::nullopt,
                std::optional<std::string> payload = std::nullopt)
-        : RegisterTask(isInDebugMode, uniqueName, taskName, tag,
-                       initialDelaySeconds, constraintsConfig, payload),
-          backoff_policy_config_(backoffPolicyConfig),
-          out_of_quota_policy_(outOfQuotaPolicy){};
+        : RegisterTask(is_in_debug_mode, unique_name, task_name, tag,
+                       initial_delay_seconds, constraints_config, payload),
+          backoff_policy_config_(backoff_policy_config),
+          out_of_quota_policy_(out_of_quota_policy){};
 };
 
 class PeriodicTask : public RegisterTask {
    public:
-    PeriodicTask(bool isInDebugMode, std::string uniqueName,
-                 std::string taskName, ExistingWorkPolicy existingWorkPolicy,
-                 int32_t frequencyInSeconds, int32_t initialDelaySeconds,
-                 Constraints constraintsConfig,
-                 std::optional<BackoffPolicyTaskConfig> backoffPolicyConfig,
-                 std::optional<OutOfQuotaPolicy> outOfQuotaPolicy,
+    PeriodicTask(bool is_in_debug_mode, std::string unique_name,
+                 std::string task_name, ExistingWorkPolicy existing_work_policy,
+                 int32_t frequency_in_seconds, int32_t initial_delay_seconds,
+                 Constraints constraints_config,
+                 std::optional<BackoffPolicyTaskConfig> backoff_policy_config,
+                 std::optional<OutOfQuotaPolicy> out_of_quota_policy,
                  std::optional<std::string> tag = std::nullopt,
                  std::optional<std::string> payload = std::nullopt)
-        : RegisterTask(isInDebugMode, uniqueName, taskName, tag,
-                       initialDelaySeconds, constraintsConfig, payload),
-          frequency_in_seconds_(frequencyInSeconds),
-          backoff_policy_config_(backoffPolicyConfig),
-          out_of_quota_policy_(outOfQuotaPolicy){};
+        : RegisterTask(is_in_debug_mode, unique_name, task_name, tag,
+                       initial_delay_seconds, constraints_config, payload),
+          frequency_in_seconds_(frequency_in_seconds),
+          backoff_policy_config_(backoff_policy_config),
+          out_of_quota_policy_(out_of_quota_policy){};
 
     ExistingWorkPolicy existing_work_policy_;
     std::optional<BackoffPolicyTaskConfig> backoff_policy_config_;
@@ -92,7 +92,7 @@ class CancelByTagTask : public CancelTask {
 
 class CancelByUniqueNameTask : public CancelTask {
    public:
-    CancelByUniqueNameTask(std::string uniqueName) : uniqueName_(uniqueName){};
+    CancelByUniqueNameTask(std::string unique_name) : uniqueName_(unique_name){};
     std::string uniqueName_;
 };
 

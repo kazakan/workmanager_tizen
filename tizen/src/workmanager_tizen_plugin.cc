@@ -12,7 +12,6 @@
 #include <string>
 
 #include "extractor.h"
-#include "fltypes.h"
 #include "job_scheduler_wrapper.h"
 #include "log.h"
 #include "sharedpreference_helper.h"
@@ -101,17 +100,17 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
                         &map, constants::keys::kTagKey);
 
                 ExistingWorkPolicy existingWorkPolicy =
-                    extractExistingWorkPolicyFromCall(call);
+                    ExtractExistingWorkPolicyFromCall(call);
                 int32_t initialDelaySeconds =
                     GetOrNullFromEncodableMap<int32_t>(
                         &map, constants::keys::kInitialDelaySecondsKey)
                         .value_or(0);
                 Constraints constraintsConfig =
-                    extractConstraintConfigFromCall(call);
+                    ExtractConstraintConfigFromCall(call);
                 std::optional<OutOfQuotaPolicy> outOfQuotaPolicy =
-                    extractOutOfQuotaPolicyFromCall(call);
+                    ExtractOutOfQuotaPolicyFromCall(call);
                 std::optional<BackoffPolicyTaskConfig> backoffPolicyConfig =
-                    extractBackoffPolicyConfigFromCall(
+                    ExtractBackoffPolicyConfigFromCall(
                         call, TaskType(TaskType::kOneOff));
                 std::optional<std::string> payload =
                     GetOrNullFromEncodableMap<std::string>(
@@ -152,7 +151,7 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
                         &map, constants::keys::kTagKey);
 
                 ExistingWorkPolicy existingWorkPolicy =
-                    extractExistingWorkPolicyFromCall(call);
+                    ExtractExistingWorkPolicyFromCall(call);
                 int32_t initialDelaySeconds =
                     GetOrNullFromEncodableMap<int32_t>(
                         &map, constants::keys::kInitialDelaySecondsKey)
@@ -163,11 +162,11 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
                         .value_or(0);
 
                 Constraints constraintsConfig =
-                    extractConstraintConfigFromCall(call);
+                    ExtractConstraintConfigFromCall(call);
                 std::optional<OutOfQuotaPolicy> outOfQuotaPolicy =
-                    extractOutOfQuotaPolicyFromCall(call);
+                    ExtractOutOfQuotaPolicyFromCall(call);
                 std::optional<BackoffPolicyTaskConfig> backoffPolicyConfig =
-                    extractBackoffPolicyConfigFromCall(
+                    ExtractBackoffPolicyConfigFromCall(
                         call, TaskType(TaskType::kOneOff));
                 std::optional<std::string> payload =
                     GetOrNullFromEncodableMap<std::string>(
@@ -247,7 +246,7 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
     void InitializeHandler(const InitializeTask& call,
                            FlMethodResultRef result) {
         preference_set_int(constants::keys::kDispatcherHandleKey,
-                           call.callBackDispathcerHandlerKey);
+                           call.callback_dispathcer_handler_key_);
 
         result->Success();
     }
@@ -268,7 +267,7 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
         LOG_DEBUG("OneOffTask name=%s", call.unique_name_.c_str());
 
         job_info_create(&job_info);
-        jobScheduler.registerOneOffJob(job_info, call);
+        jobScheduler.RegisterOneOffJob(job_info, call);
 
         result->Success();
     }
@@ -282,7 +281,7 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
                   call.frequency_in_seconds_);
 
         job_info_create(&job_info);
-        jobScheduler.registerPeriodicJob(job_info, call);
+        jobScheduler.RegisterPeriodicJob(job_info, call);
 
         result->Success();
     }
@@ -292,7 +291,7 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
     static void CancelByTagHandler(const CancelByTagTask& call,
                                    FlMethodResultRef result) {
         JobScheduler jobScheduler;
-        jobScheduler.cancelByTag(call);
+        jobScheduler.CancelByTag(call);
 
         result->Success();
     }
@@ -300,7 +299,7 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
     void CancelByUniqueNameHandler(const CancelByUniqueNameTask& call,
                                    FlMethodResultRef result) {
         JobScheduler jobScheduler;
-        jobScheduler.cancelByUniqueName(call);
+        jobScheduler.CancelByUniqueName(call);
 
         result->Success();
     }
@@ -332,7 +331,7 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
                          std::string(constants::keys::kBgChannelInputDataKey)),
                      inputData}};
 
-                backgroundChannel->InvokeMethod(
+                background_channel_->InvokeMethod(
                     constants::methods::kOnResultSendMethod,
                     std::make_unique<flutter::EncodableValue>(arg));
             }

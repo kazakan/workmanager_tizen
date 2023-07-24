@@ -14,38 +14,38 @@ class JobScheduler {
     JobScheduler(JobScheduler const&) = delete;
     JobScheduler& operator=(JobScheduler const&) = delete;
 
-    void setJobConstraints(job_info_h jobInfo, const Constraints& constraints) {
+    void SetJobConstraints(job_info_h job_info, const Constraints& constraints) {
         job_info_set_requires_battery_not_low(
-            jobInfo, constraints.requires_battery_not_low_);
-        job_info_set_requires_charging(jobInfo, constraints.requires_charging_);
+            job_info, constraints.requires_battery_not_low_);
+        job_info_set_requires_charging(job_info, constraints.requires_charging_);
     }
 
-    void registerOneOffJob(job_info_h jobInfo, const OneoffTask& task) {
-        job_info_set_once(jobInfo, true);
-        
-        job_scheduler_schedule(jobInfo, task.unique_name_.c_str());
+    void RegisterOneOffJob(job_info_h job_info, const OneoffTask& task) {
+        job_info_set_once(job_info, true);
+
+        job_scheduler_schedule(job_info, task.unique_name_.c_str());
     }
 
-    void registerPeriodicJob(job_info_h jobInfo, const PeriodicTask& task) {
-        job_info_set_periodic(jobInfo, task.frequency_in_seconds_);
-        job_info_set_persistent(jobInfo, true);
+    void RegisterPeriodicJob(job_info_h job_info, const PeriodicTask& task) {
+        job_info_set_periodic(job_info, task.frequency_in_seconds_);
+        job_info_set_persistent(job_info, true);
 
-        job_scheduler_schedule(jobInfo, task.unique_name_.c_str());
+        job_scheduler_schedule(job_info, task.unique_name_.c_str());
     }
 
-    void cancelByTag(const CancelByTagTask& task) {
+    void CancelByTag(const CancelByTagTask& task) {
         // TODO : implement
     }
 
-    void cancelByUniqueName(const CancelByUniqueNameTask& task) {
+    void CancelByUniqueName(const CancelByUniqueNameTask& task) {
         job_scheduler_cancel(task.uniqueName_.c_str());
     }
 
-    void cancelAll() {
+    void CancelAll() {
         // TODO : implement
     }
 
-    std::vector<std::string> getAllJobs() {
+    std::vector<std::string> GetAllJobs() {
         std::vector<std::string> ret;
 
         int ret = job_scheduler_foreach_job(
