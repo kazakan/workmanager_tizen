@@ -43,7 +43,7 @@ class JobScheduler {
     void CancelAll() { job_scheduler_cancel_all(); }
 
     std::vector<std::string> GetAllJobs() {
-        std::vector<std::string> ret;
+        std::vector<std::string> jobs;
 
         int code = job_scheduler_foreach_job(
             [](job_info_h job_info, void* user_data) {
@@ -54,9 +54,9 @@ class JobScheduler {
                 vec->emplace_back(job_id);
                 return true;
             },
-            &ret);
+            &jobs);
 
-        return ret;
+        return jobs;
     }
 };
 

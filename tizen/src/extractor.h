@@ -13,10 +13,9 @@
 
 typedef flutter::MethodCall<flutter::EncodableValue> FlMethodCall;
 
-ExistingWorkPolicy ExtractExistingWorkPolicyFromCall(const FlMethodCall &call) {
+ExistingWorkPolicy ExtractExistingWorkPolicyFromMap(
+    const flutter::EncodableMap &map) {
     std::string value;
-    const auto &args = *call.arguments();
-    flutter::EncodableMap map = std::get<flutter::EncodableMap>(args);
     bool succeed = GetValueFromEncodableMap<std::string>(
         &map, constants::keys::kExistingWorkpolicykey, value);
     if (succeed) {
@@ -28,19 +27,15 @@ ExistingWorkPolicy ExtractExistingWorkPolicyFromCall(const FlMethodCall &call) {
             return ExistingWorkPolicy::kKeep;
         } else if (value == constants::values::kAppend) {
             return ExistingWorkPolicy::kAppend;
-        } else if (value == constants::values::kUpdate) {  // TODO : check
-                                                           // real value
+        } else if (value == constants::values::kUpdate) {
             return ExistingWorkPolicy::kUpdate;
         }
     }
     return ExistingWorkPolicy::kKeep;
 }
 
-std::optional<BackoffPolicyTaskConfig> ExtractBackoffPolicyConfigFromCall(
-    const FlMethodCall &call, TaskType task_type) {
-    const auto &args = *call.arguments();
-    flutter::EncodableMap map = std::get<flutter::EncodableMap>(args);
-
+std::optional<BackoffPolicyTaskConfig> ExtractBackoffPolicyConfigFromMap(
+    const flutter::EncodableMap &map, TaskType task_type) {
     std::string value;
     if (!GetValueFromEncodableMap(&map, constants::keys::kBackOffPolicyTypeKey,
                                   value)) {
@@ -69,11 +64,8 @@ std::optional<BackoffPolicyTaskConfig> ExtractBackoffPolicyConfigFromCall(
     return ret;
 }
 
-std::optional<OutOfQuotaPolicy> ExtractOutOfQuotaPolicyFromCall(
-    const FlMethodCall &call) {
-    const auto &args = *call.arguments();
-    flutter::EncodableMap map = std::get<flutter::EncodableMap>(args);
-
+std::optional<OutOfQuotaPolicy> ExtractOutOfQuotaPolicyFromMap(
+    const flutter::EncodableMap &map) {
     std::optional<std::string> value = GetOrNullFromEncodableMap<std::string>(
         &map, constants::keys::kOutofQuotaPolicyKey);
 
@@ -92,12 +84,9 @@ std::optional<OutOfQuotaPolicy> ExtractOutOfQuotaPolicyFromCall(
     return std::nullopt;
 }
 
-NetworkType ExtractNetworkTypeFromCall(const FlMethodCall &call) {
-    const auto &args = *call.arguments();
-    flutter::EncodableMap map = std::get<flutter::EncodableMap>(args);
-
+NetworkType ExtractNetworkTypeFromMap(const flutter::EncodableMap &args) {
     std::optional<std::string> value = GetOrNullFromEncodableMap<std::string>(
-        &map, constants::keys::kNetworkTypekey);
+        &args, constants::keys::kNetworkTypekey);
     if (!value.has_value()) {
         return NetworkType::kNotRequired;
     }
@@ -121,11 +110,8 @@ NetworkType ExtractNetworkTypeFromCall(const FlMethodCall &call) {
     return NetworkType::kNotRequired;
 }
 
-Constraints ExtractConstraintConfigFromCall(const FlMethodCall &call) {
-    const auto &args = *call.arguments();
-    flutter::EncodableMap map = std::get<flutter::EncodableMap>(args);
-
-    NetworkType requested_network_type = ExtractNetworkTypeFromCall(call);
+Constraints ExtractConstraintConfigFromCall(const flutter::EncodableMap &map) {
+    NetworkType requested_network_type = ExtractNetworkTypeFromMap(map);
     bool requires_battery_not_low =
         GetOrNullFromEncodableMap<bool>(&map,
                                         constants::keys::kBatteryNotLowKey)
