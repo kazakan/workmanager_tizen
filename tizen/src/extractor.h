@@ -13,14 +13,6 @@
 
 typedef flutter::MethodCall<flutter::EncodableValue> FlMethodCall;
 
-class PossibleWorkManagerCall {
-   public:
-    std::string raw_method_name_;
-
-    static PossibleWorkManagerCall fromRawMethodName(
-        const std::string &method_name);
-};
-
 ExistingWorkPolicy ExtractExistingWorkPolicyFromCall(const FlMethodCall &call) {
     std::string value;
     const auto &args = *call.arguments();
