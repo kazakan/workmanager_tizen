@@ -19,8 +19,8 @@
 namespace {
 
 typedef flutter::MethodCall<flutter::EncodableValue> FlMethodCall;
-typedef std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>>
-    FlMethodResultRef;
+typedef flutter::MethodResult<flutter::EncodableValue> FlMethodResult;
+typedef flutter::MethodChannel<flutter::EncodableValue> FlMethodChannel;
 
 class WorkmanagerTizenPlugin : public flutter::Plugin {
    public:
@@ -28,12 +28,12 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
         auto plugin = std::make_unique<WorkmanagerTizenPlugin>();
 
         auto foreground_channel =
-            std::make_unique<flutter::MethodChannel<flutter::EncodableValue>>(
+            std::make_unique<FlMethodChannel>(
                 registrar->messenger(), constants::kForegroundChannelName,
                 &flutter::StandardMethodCodec::GetInstance());
 
         plugin->background_channel_ =
-            std::make_unique<flutter::MethodChannel<flutter::EncodableValue>>(
+            std::make_unique<FlMethodChannel>(
                 registrar->messenger(), constants::kBackgroundChannelName,
                 &flutter::StandardMethodCodec::GetInstance());
 
@@ -55,11 +55,11 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
     virtual ~WorkmanagerTizenPlugin() {}
 
    private:
-    std::unique_ptr<flutter::MethodChannel<flutter::EncodableValue>>
+    std::unique_ptr<FlMethodChannel>
         background_channel_;
 
     void WorkmanagerHandler(const FlMethodCall& call,
-                            FlMethodResultRef result) {
+                            std::unique_ptr<FlMethodResult> result) {
         LOG_DEBUG("methodcall name %s", call.method_name().c_str());
 
         if (call.method_name() == constants::methods::kInitialize) {
@@ -243,14 +243,14 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
 
    private:
     void InitializeHandler(const InitializeTask& call,
-                           FlMethodResultRef result) {
+                           std::unique_ptr<FlMethodResult> result) {
         preference_set_int(constants::keys::kDispatcherHandleKey,
                            call.callback_dispathcer_handler_key);
 
         result->Success();
     }
 
-    void OneOffTaskHandler(const OneoffTask& call, FlMethodResultRef result) {
+    void OneOffTaskHandler(const OneoffTask& call, std::unique_ptr<FlMethodResult> result) {
         bool initialized = false;
         preference_is_existing(constants::keys::kDispatcherHandleKey,
                                &initialized);
@@ -272,7 +272,7 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
     }
 
     void PeriodicTaskHandler(const PeriodicTask& call,
-                             FlMethodResultRef result) {
+                             std::unique_ptr<FlMethodResult> result) {
         JobScheduler job_scheduler;
         job_info_h job_info;
 
@@ -285,10 +285,10 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
         result->Success();
     }
 
-    void RegisterHandler(const RegisterTask& call, FlMethodResultRef result) {}
+    void RegisterHandler(const RegisterTask& call, std::unique_ptr<FlMethodResult> result) {}
 
     static void CancelByTagHandler(const CancelByTagTask& call,
-                                   FlMethodResultRef result) {
+                                   std::unique_ptr<FlMethodResult> result) {
         JobScheduler job_scheduler;
         job_scheduler.CancelByTag(call);
 
@@ -296,21 +296,21 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
     }
 
     void CancelByUniqueNameHandler(const CancelByNameTask& call,
-                                   FlMethodResultRef result) {
+                                   std::unique_ptr<FlMethodResult> result) {
         JobScheduler job_scheduler;
         job_scheduler.CancelByUniqueName(call);
 
         result->Success();
     }
 
-    void CancelAllhandler(FlMethodResultRef result) {
+    void CancelAllhandler(std::unique_ptr<FlMethodResult> result) {
         JobScheduler job_scheduler;
         job_scheduler.CancelAll();
 
         result->Success();
     }
 
-    void BackgroundHandler(const FlMethodCall& call, FlMethodResultRef result) {
+    void BackgroundHandler(const FlMethodCall& call, std::unique_ptr<FlMethodResult> result) {
         LOG_DEBUG("Background call name =%s", call.method_name().c_str());
 
         if (call.method_name() ==
