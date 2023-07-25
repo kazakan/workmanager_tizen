@@ -123,7 +123,7 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
                 ExtractOutOfQuotaPolicyFromMap(map);
             std::optional<BackoffPolicyTaskConfig> backoff_policy_config =
                 ExtractBackoffPolicyConfigFromMap(map,
-                                                   TaskType(TaskType::kOneOff));
+                                                  TaskType(TaskType::kOneOff));
             std::optional<std::string> payload =
                 GetOrNullFromEncodableMap<std::string>(
                     &map, constants::keys::kPayloadKey);
@@ -143,10 +143,7 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
             }
 
             JobScheduler job_scheduler;
-            job_info_h job_info;
-
-            job_info_create(&job_info);
-            job_scheduler.RegisterOneOffJob(job_info, call);
+            job_scheduler.RegisterOneOffJob(call);
 
             result->Success();
         } else {
@@ -187,7 +184,7 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
                 ExtractOutOfQuotaPolicyFromMap(map);
             std::optional<BackoffPolicyTaskConfig> backoff_policy_config =
                 ExtractBackoffPolicyConfigFromMap(map,
-                                                   TaskType(TaskType::kOneOff));
+                                                  TaskType(TaskType::kOneOff));
             std::optional<std::string> payload =
                 GetOrNullFromEncodableMap<std::string>(
                     &map, constants::keys::kPayloadKey);
@@ -202,13 +199,11 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
                 backoff_policy_config, out_of_quota_policy, tag, payload);
 
             JobScheduler job_scheduler;
-            job_info_h job_info;
 
             LOG_DEBUG("Periodictask name=%s freq=%d", call.unique_name.c_str(),
                       call.frequency_in_seconds);
 
-            job_info_create(&job_info);
-            job_scheduler.RegisterPeriodicJob(job_info, call);
+            job_scheduler.RegisterPeriodicJob(call);
 
             result->Success();
         } else {
