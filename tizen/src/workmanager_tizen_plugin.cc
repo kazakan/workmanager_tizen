@@ -27,15 +27,13 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
     static void RegisterWithRegistrar(flutter::PluginRegistrar* registrar) {
         auto plugin = std::make_unique<WorkmanagerTizenPlugin>();
 
-        auto foreground_channel =
-            std::make_unique<FlMethodChannel>(
-                registrar->messenger(), constants::kForegroundChannelName,
-                &flutter::StandardMethodCodec::GetInstance());
+        auto foreground_channel = std::make_unique<FlMethodChannel>(
+            registrar->messenger(), constants::kForegroundChannelName,
+            &flutter::StandardMethodCodec::GetInstance());
 
-        plugin->background_channel_ =
-            std::make_unique<FlMethodChannel>(
-                registrar->messenger(), constants::kBackgroundChannelName,
-                &flutter::StandardMethodCodec::GetInstance());
+        plugin->background_channel_ = std::make_unique<FlMethodChannel>(
+            registrar->messenger(), constants::kBackgroundChannelName,
+            &flutter::StandardMethodCodec::GetInstance());
 
         foreground_channel->SetMethodCallHandler(
             [plugin_pointer = plugin.get()](const auto& call, auto result) {
@@ -55,11 +53,10 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
     virtual ~WorkmanagerTizenPlugin() {}
 
    private:
-    std::unique_ptr<FlMethodChannel>
-        background_channel_;
+    std::unique_ptr<FlMethodChannel> background_channel_;
 
     void HandleWorkmanagerCall(const FlMethodCall& call,
-                            std::unique_ptr<FlMethodResult> result) {
+                               std::unique_ptr<FlMethodResult> result) {
         LOG_DEBUG("methodcall name %s", call.method_name().c_str());
 
         if (call.method_name() == constants::methods::kInitialize) {
@@ -212,7 +209,7 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
                     &map, constants::keys::kCancelTaskUniqueNameKey);
                 if (value.has_value()) {
                     HandleCancelByName(CancelByNameTask(value.value()),
-                                              std::move(result));
+                                       std::move(result));
                     return;
                 }
             }
@@ -229,7 +226,7 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
                     &map, constants::keys::kCancelTaskTagKey);
                 if (value.has_value()) {
                     HandleCancelByTag(CancelByTagTask(value.value()),
-                                       std::move(result));
+                                      std::move(result));
                 }
             }
             result->Error("WRONG_ARGS", "Wrong argument for cancelTaskBytag");
@@ -242,14 +239,15 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
     }
 
     void HandleInitializeTask(const InitializeTask& call,
-                           std::unique_ptr<FlMethodResult> result) {
+                              std::unique_ptr<FlMethodResult> result) {
         preference_set_int(constants::keys::kDispatcherHandleKey,
                            call.callback_dispathcer_handler_key);
 
         result->Success();
     }
 
-    void HandleOneOffTask(const OneoffTask& call, std::unique_ptr<FlMethodResult> result) {
+    void HandleOneOffTask(const OneoffTask& call,
+                          std::unique_ptr<FlMethodResult> result) {
         bool initialized = false;
         preference_is_existing(constants::keys::kDispatcherHandleKey,
                                &initialized);
@@ -271,7 +269,7 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
     }
 
     void HandlePeriodicTask(const PeriodicTask& call,
-                             std::unique_ptr<FlMethodResult> result) {
+                            std::unique_ptr<FlMethodResult> result) {
         JobScheduler job_scheduler;
         job_info_h job_info;
 
@@ -285,7 +283,7 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
     }
 
     void HandleCancelByTag(const CancelByTagTask& call,
-                                   std::unique_ptr<FlMethodResult> result) {
+                           std::unique_ptr<FlMethodResult> result) {
         JobScheduler job_scheduler;
         job_scheduler.CancelByTag(call);
 
@@ -293,7 +291,7 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
     }
 
     void HandleCancelByName(const CancelByNameTask& call,
-                                   std::unique_ptr<FlMethodResult> result) {
+                            std::unique_ptr<FlMethodResult> result) {
         JobScheduler job_scheduler;
         job_scheduler.CancelByUniqueName(call);
 
@@ -307,7 +305,8 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
         result->Success();
     }
 
-    void HandleBackground(const FlMethodCall& call, std::unique_ptr<FlMethodResult> result) {
+    void HandleBackground(const FlMethodCall& call,
+                          std::unique_ptr<FlMethodResult> result) {
         LOG_DEBUG("Background call name =%s", call.method_name().c_str());
 
         if (call.method_name() ==

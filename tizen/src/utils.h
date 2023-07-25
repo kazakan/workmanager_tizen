@@ -7,8 +7,8 @@
 #include <optional>
 
 template <typename T>
-bool GetValueFromEncodableMap(const flutter::EncodableMap *map,
-                                     const char *key, T &out) {
+bool GetValueFromEncodableMap(const flutter::EncodableMap *map, const char *key,
+                              T &out) {
     auto iter = map->find(flutter::EncodableValue(key));
     if (iter != map->end() && !iter->second.IsNull()) {
         if (auto *value = std::get_if<T>(&iter->second)) {
@@ -20,8 +20,8 @@ bool GetValueFromEncodableMap(const flutter::EncodableMap *map,
 }
 
 template <typename T>
-std::optional<T> GetOrNullFromEncodableMap(
-    const flutter::EncodableMap *map, const char *key) {
+std::optional<T> GetOrNullFromEncodableMap(const flutter::EncodableMap *map,
+                                           const char *key) {
     auto iter = map->find(flutter::EncodableValue(key));
     if (iter != map->end() && !iter->second.IsNull()) {
         if (auto *value = std::get_if<T>(&iter->second)) {
