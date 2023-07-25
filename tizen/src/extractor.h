@@ -48,7 +48,6 @@ std::optional<BackoffPolicyTaskConfig> ExtractBackoffPolicyConfigFromCall(
     }
 
     BackoffPolicy backoff_policy;
-
     if (value == constants::values::kExponential) {
         backoff_policy = BackoffPolicy::kExponential;
     } else {
@@ -78,7 +77,9 @@ std::optional<OutOfQuotaPolicy> ExtractOutOfQuotaPolicyFromCall(
     std::optional<std::string> value = GetOrNullFromEncodableMap<std::string>(
         &map, constants::keys::kOutofQuotaPolicyKey);
 
-    if (!value.has_value()) return std::nullopt;
+    if (!value.has_value()) {
+        return std::nullopt;
+    }
 
     Upper(value.value());
 
@@ -97,7 +98,9 @@ NetworkType ExtractNetworkTypeFromCall(const FlMethodCall &call) {
 
     std::optional<std::string> value = GetOrNullFromEncodableMap<std::string>(
         &map, constants::keys::kNetworkTypekey);
-    if (!value.has_value()) return NetworkType::kNotRequired;
+    if (!value.has_value()) {
+        return NetworkType::kNotRequired;
+    }
 
     Upper(value.value());
 
