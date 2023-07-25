@@ -118,7 +118,7 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
                     .value_or(0);
 
             Constraints constraints_config =
-                ExtractConstraintConfigFromCall(map);
+                ExtractConstraintConfigFromMap(map);
             std::optional<OutOfQuotaPolicy> out_of_quota_policy =
                 ExtractOutOfQuotaPolicyFromMap(map);
             std::optional<BackoffPolicyTaskConfig> backoff_policy_config =
@@ -178,7 +178,7 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
                     .value_or(0);
 
             Constraints constraints_config =
-                ExtractConstraintConfigFromCall(map);
+                ExtractConstraintConfigFromMap(map);
             std::optional<OutOfQuotaPolicy> out_of_quota_policy =
                 ExtractOutOfQuotaPolicyFromMap(map);
             std::optional<BackoffPolicyTaskConfig> backoff_policy_config =

@@ -110,7 +110,7 @@ NetworkType ExtractNetworkTypeFromMap(const flutter::EncodableMap &args) {
     return NetworkType::kNotRequired;
 }
 
-Constraints ExtractConstraintConfigFromCall(const flutter::EncodableMap &map) {
+Constraints ExtractConstraintConfigFromMap(const flutter::EncodableMap &map) {
     NetworkType requested_network_type = ExtractNetworkTypeFromMap(map);
     bool requires_battery_not_low =
         GetOrNullFromEncodableMap<bool>(&map,
