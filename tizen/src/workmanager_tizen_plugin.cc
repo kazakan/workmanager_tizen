@@ -241,7 +241,6 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
         result->NotImplemented();
     }
 
-   private:
     void InitializeHandler(const InitializeTask& call,
                            std::unique_ptr<FlMethodResult> result) {
         preference_set_int(constants::keys::kDispatcherHandleKey,
