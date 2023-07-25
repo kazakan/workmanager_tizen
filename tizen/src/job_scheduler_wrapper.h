@@ -23,14 +23,12 @@ class JobScheduler {
 
     void RegisterOneOffJob(job_info_h job_info, const OneoffTask& task) {
         job_info_set_once(job_info, true);
-
         job_scheduler_schedule(job_info, task.unique_name.c_str());
     }
 
     void RegisterPeriodicJob(job_info_h job_info, const PeriodicTask& task) {
         job_info_set_periodic(job_info, task.frequency_in_seconds);
         job_info_set_persistent(job_info, true);
-
         job_scheduler_schedule(job_info, task.unique_name.c_str());
     }
 
@@ -50,10 +48,9 @@ class JobScheduler {
         int code = job_scheduler_foreach_job(
             [](job_info_h job_info, void* user_data) {
                 char* job_id = NULL;
+                auto vec = static_cast<std::vector<std::string>*>(user_data);
 
                 job_info_get_job_id(job_info, &job_id);
-
-                auto vec = static_cast<std::vector<std::string>*>(user_data);
                 vec->emplace_back(job_id);
                 return true;
             },
