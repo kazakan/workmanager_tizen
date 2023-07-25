@@ -6,6 +6,7 @@
 
 #include "constants.h"
 
+// This class could be removed in future
 void BackgroundWorker::JobStartHook(job_info_h job_info, void* user_data) {
     char* job_id = nullptr;
     job_info_get_job_id(job_info, &job_id);

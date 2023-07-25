@@ -9,6 +9,7 @@
 
 #include "options.h"
 
+// This class could be removed in future
 class BackgroundWorker {
     static std::unique_ptr<flutter::MethodChannel<flutter::EncodableValue>>
         channel;
