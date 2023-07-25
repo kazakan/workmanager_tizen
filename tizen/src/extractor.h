@@ -68,12 +68,12 @@ std::optional<BackoffPolicyTaskConfig> ExtractBackoffPolicyConfigFromCall(
             &map, constants::keys::kBackOffPolicyDelayMillisKey)
             .value_or(15 * 6 * 1000) /
         1000;
-    int32_t minimum_backoff_delay = task_type.minimum_backoff_delay_;
+    int32_t minimum_backoff_delay = task_type.minimum_backoff_delay;
 
     BackoffPolicyTaskConfig ret;
-    ret.backoff_policy_ = backoff_policy;
-    ret.request_backoff_delay_ = requested_backoff_delay;
-    ret.min_backoff_mills_ = minimum_backoff_delay;
+    ret.backoff_policy = backoff_policy;
+    ret.request_backoff_delay = requested_backoff_delay;
+    ret.min_backoff_mills = minimum_backoff_delay;
 
     return ret;
 }
@@ -131,18 +131,20 @@ Constraints ExtractConstraintConfigFromCall(const FlMethodCall &call) {
     flutter::EncodableMap map = std::get<flutter::EncodableMap>(args);
 
     NetworkType requested_network_type = ExtractNetworkTypeFromCall(call);
-    bool requires_battery_not_low = GetOrNullFromEncodableMap<bool>(
-                                     &map, constants::keys::kBatteryNotLowKey)
-                                     .value_or(false);
+    bool requires_battery_not_low =
+        GetOrNullFromEncodableMap<bool>(&map,
+                                        constants::keys::kBatteryNotLowKey)
+            .value_or(false);
     bool requires_charging =
         GetOrNullFromEncodableMap<bool>(&map, constants::keys::kChargingKey)
             .value_or(false);
     bool requires_device_idle =
         GetOrNullFromEncodableMap<bool>(&map, constants::keys::kDeviceidlekey)
             .value_or(false);
-    bool requires_storage_not_low = GetOrNullFromEncodableMap<bool>(
-                                     &map, constants::keys::kStorageNotLowKey)
-                                     .value_or(false);
+    bool requires_storage_not_low =
+        GetOrNullFromEncodableMap<bool>(&map,
+                                        constants::keys::kStorageNotLowKey)
+            .value_or(false);
 
     return Constraints(requested_network_type, requires_battery_not_low,
                        requires_charging, requires_storage_not_low);

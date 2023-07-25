@@ -7,6 +7,7 @@
 #include <flutter/standard_method_codec.h>
 #include <job_scheduler.h>
 #include <system_info.h>
+#include <tizen.h>
 
 #include <memory>
 #include <string>
@@ -26,7 +27,7 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
     static void RegisterWithRegistrar(flutter::PluginRegistrar* registrar) {
         auto plugin = std::make_unique<WorkmanagerTizenPlugin>();
 
-        auto foregroundChannel =
+        auto foreground_channel =
             std::make_unique<flutter::MethodChannel<flutter::EncodableValue>>(
                 registrar->messenger(), constants::kForegroundChannelName,
                 &flutter::StandardMethodCodec::GetInstance());
@@ -36,7 +37,7 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
                 registrar->messenger(), constants::kBackgroundChannelName,
                 &flutter::StandardMethodCodec::GetInstance());
 
-        foregroundChannel->SetMethodCallHandler(
+        foreground_channel->SetMethodCallHandler(
             [plugin_pointer = plugin.get()](const auto& call, auto result) {
                 plugin_pointer->WorkmanagerHandler(call, std::move(result));
             });
@@ -86,29 +87,29 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
                 flutter::EncodableMap map =
                     std::get<flutter::EncodableMap>(args);
 
-                bool isDebugMode = std::get<bool>(map[flutter::EncodableValue(
+                bool is_debug_mode = std::get<bool>(map[flutter::EncodableValue(
                     constants::keys::kIsInDebugModeKey)]);
-                std::string uniqueName =
+                std::string unique_name =
                     std::get<std::string>(map[flutter::EncodableValue(
                         constants::keys::kUniquenameKey)]);
-                std::string taskname =
+                std::string task_name =
                     std::get<std::string>(map[flutter::EncodableValue(
                         constants::keys::kNameValueKey)]);
                 std::optional<std::string> tag =
                     GetOrNullFromEncodableMap<std::string>(
                         &map, constants::keys::kTagKey);
 
-                ExistingWorkPolicy existingWorkPolicy =
+                ExistingWorkPolicy existing_work_policy =
                     ExtractExistingWorkPolicyFromCall(call);
-                int32_t initialDelaySeconds =
+                int32_t initial_delay_seconds =
                     GetOrNullFromEncodableMap<int32_t>(
                         &map, constants::keys::kInitialDelaySecondsKey)
                         .value_or(0);
-                Constraints constraintsConfig =
+                Constraints constraints_config =
                     ExtractConstraintConfigFromCall(call);
-                std::optional<OutOfQuotaPolicy> outOfQuotaPolicy =
+                std::optional<OutOfQuotaPolicy> out_of_quota_policy =
                     ExtractOutOfQuotaPolicyFromCall(call);
-                std::optional<BackoffPolicyTaskConfig> backoffPolicyConfig =
+                std::optional<BackoffPolicyTaskConfig> backoff_policy_config =
                     ExtractBackoffPolicyConfigFromCall(
                         call, TaskType(TaskType::kOneOff));
                 std::optional<std::string> payload =
@@ -116,10 +117,10 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
                         &map, constants::keys::kPayloadKey);
 
                 OneOffTaskHandler(
-                    OneoffTask(isDebugMode, uniqueName, taskname,
-                               existingWorkPolicy, initialDelaySeconds,
-                               constraintsConfig, backoffPolicyConfig,
-                               outOfQuotaPolicy, tag, payload),
+                    OneoffTask(is_debug_mode, unique_name, task_name,
+                               existing_work_policy, initial_delay_seconds,
+                               constraints_config, backoff_policy_config,
+                               out_of_quota_policy, tag, payload),
                     std::move(result));
 
                 LOG_DEBUG("tag=%s payload=%s", tag.value_or("no tag").c_str(),
@@ -137,34 +138,34 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
                 flutter::EncodableMap map =
                     std::get<flutter::EncodableMap>(args);
 
-                bool isDebugMode = std::get<bool>(map[flutter::EncodableValue(
+                bool is_debug_mode = std::get<bool>(map[flutter::EncodableValue(
                     constants::keys::kIsInDebugModeKey)]);
-                std::string uniqueName =
+                std::string unique_name =
                     std::get<std::string>(map[flutter::EncodableValue(
                         constants::keys::kUniquenameKey)]);
-                std::string taskname =
+                std::string task_name =
                     std::get<std::string>(map[flutter::EncodableValue(
                         constants::keys::kNameValueKey)]);
                 std::optional<std::string> tag =
                     GetOrNullFromEncodableMap<std::string>(
                         &map, constants::keys::kTagKey);
 
-                ExistingWorkPolicy existingWorkPolicy =
+                ExistingWorkPolicy existing_work_policy =
                     ExtractExistingWorkPolicyFromCall(call);
-                int32_t initialDelaySeconds =
+                int32_t initial_delay_seconds =
                     GetOrNullFromEncodableMap<int32_t>(
                         &map, constants::keys::kInitialDelaySecondsKey)
                         .value_or(0);
-                int32_t frequencySeconds =
+                int32_t frequency_seconds =
                     GetOrNullFromEncodableMap<int32_t>(
                         &map, constants::keys::kFrequencySecondsKey)
                         .value_or(0);
 
-                Constraints constraintsConfig =
+                Constraints constraints_config =
                     ExtractConstraintConfigFromCall(call);
-                std::optional<OutOfQuotaPolicy> outOfQuotaPolicy =
+                std::optional<OutOfQuotaPolicy> out_of_quota_policy =
                     ExtractOutOfQuotaPolicyFromCall(call);
-                std::optional<BackoffPolicyTaskConfig> backoffPolicyConfig =
+                std::optional<BackoffPolicyTaskConfig> backoff_policy_config =
                     ExtractBackoffPolicyConfigFromCall(
                         call, TaskType(TaskType::kOneOff));
                 std::optional<std::string> payload =
@@ -185,16 +186,16 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
                 */
                 ////
 
-                LOG_DEBUG("freq=%ld tag=%s payload=%s", frequencySeconds,
+                LOG_DEBUG("freq=%ld tag=%s payload=%s", frequency_seconds,
                           tag.value_or("no tag").c_str(),
                           payload.value_or("no payload").c_str());
 
                 PeriodicTaskHandler(
-                    PeriodicTask(isDebugMode, uniqueName, taskname,
-                                 existingWorkPolicy, frequencySeconds,
-                                 initialDelaySeconds, constraintsConfig,
-                                 backoffPolicyConfig, outOfQuotaPolicy, tag,
-                                 payload),
+                    PeriodicTask(is_debug_mode, unique_name, task_name,
+                                 existing_work_policy, frequency_seconds,
+                                 initial_delay_seconds, constraints_config,
+                                 backoff_policy_config, out_of_quota_policy,
+                                 tag, payload),
                     std::move(result));
                 return;
             }
@@ -210,9 +211,8 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
                 auto value = GetOrNullFromEncodableMap<std::string>(
                     &map, constants::keys::kCancelTaskUniqueNameKey);
                 if (value.has_value()) {
-                    CancelByUniqueNameHandler(
-                        CancelByUniqueNameTask(value.value()),
-                        std::move(result));
+                    CancelByUniqueNameHandler(CancelByNameTask(value.value()),
+                                              std::move(result));
                     return;
                 }
             }
@@ -235,7 +235,7 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
             result->Error("WRONG_ARGS", "Wrong argument for cancelTaskBytag");
             return;
         } else if (call.method_name() == constants::methods::kCancelAllTasks) {
-            CancelAllhandler(CancelTask(), std::move(result));
+            CancelAllhandler(std::move(result));
         }
 
         result->NotImplemented();
@@ -245,7 +245,7 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
     void InitializeHandler(const InitializeTask& call,
                            FlMethodResultRef result) {
         preference_set_int(constants::keys::kDispatcherHandleKey,
-                           call.callback_dispathcer_handler_key_);
+                           call.callback_dispathcer_handler_key);
 
         result->Success();
     }
@@ -260,27 +260,27 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
             return;
         }
 
-        JobScheduler jobScheduler;
+        JobScheduler job_scheduler;
         job_info_h job_info;
 
-        LOG_DEBUG("OneOffTask name=%s", call.unique_name_.c_str());
+        LOG_DEBUG("OneOffTask name=%s", call.unique_name.c_str());
 
         job_info_create(&job_info);
-        jobScheduler.RegisterOneOffJob(job_info, call);
+        job_scheduler.RegisterOneOffJob(job_info, call);
 
         result->Success();
     }
 
     void PeriodicTaskHandler(const PeriodicTask& call,
                              FlMethodResultRef result) {
-        JobScheduler jobScheduler;
+        JobScheduler job_scheduler;
         job_info_h job_info;
 
-        LOG_DEBUG("Periodictask name=%s freq=%d", call.unique_name_.c_str(),
-                  call.frequency_in_seconds_);
+        LOG_DEBUG("Periodictask name=%s freq=%d", call.unique_name.c_str(),
+                  call.frequency_in_seconds);
 
         job_info_create(&job_info);
-        jobScheduler.RegisterPeriodicJob(job_info, call);
+        job_scheduler.RegisterPeriodicJob(job_info, call);
 
         result->Success();
     }
@@ -289,22 +289,24 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
 
     static void CancelByTagHandler(const CancelByTagTask& call,
                                    FlMethodResultRef result) {
-        JobScheduler jobScheduler;
-        jobScheduler.CancelByTag(call);
+        JobScheduler job_scheduler;
+        job_scheduler.CancelByTag(call);
 
         result->Success();
     }
 
-    void CancelByUniqueNameHandler(const CancelByUniqueNameTask& call,
+    void CancelByUniqueNameHandler(const CancelByNameTask& call,
                                    FlMethodResultRef result) {
-        JobScheduler jobScheduler;
-        jobScheduler.CancelByUniqueName(call);
+        JobScheduler job_scheduler;
+        job_scheduler.CancelByUniqueName(call);
 
         result->Success();
     }
 
-    void CancelAllhandler(const CancelTask& call, FlMethodResultRef result) {
-        // TODO : Implement
+    void CancelAllhandler(FlMethodResultRef result) {
+        JobScheduler job_scheduler;
+        job_scheduler.CancelAll();
+
         result->Success();
     }
 
@@ -317,18 +319,18 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
             if (std::holds_alternative<flutter::EncodableMap>(args)) {
                 flutter::EncodableMap map =
                     std::get<flutter::EncodableMap>(args);
-                auto dartTask = map[flutter::EncodableValue(
+                auto dart_task = map[flutter::EncodableValue(
                     constants::keys::kBgChannelDartTaskKey)];
-                auto inputData = map[flutter::EncodableValue(
+                auto input_data = map[flutter::EncodableValue(
                     constants::keys::kBgChannelInputDataKey)];
 
                 flutter::EncodableMap arg = {
                     {flutter::EncodableValue(
                          std::string(constants::keys::kBgChannelDartTaskKey)),
-                     dartTask},
+                     dart_task},
                     {flutter::EncodableValue(
                          std::string(constants::keys::kBgChannelInputDataKey)),
-                     inputData}};
+                     input_data}};
 
                 background_channel_->InvokeMethod(
                     constants::methods::kOnResultSendMethod,

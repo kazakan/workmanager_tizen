@@ -19,43 +19,41 @@ enum class OutOfQuotaPolicy {
 
 enum class BackoffPolicy { kExponential, kLinear };
 
-class Constraints {
-   public:
-    const NetworkType network_type_;
+struct Constraints {
+    const NetworkType network_type;
 
-    const bool requires_battery_not_low_;
+    const bool requires_battery_not_low;
 
-    const bool requires_charging_;
+    const bool requires_charging;
 
-    const bool requires_device_idle_;  // Not supported
+    const bool requires_device_idle;  // Not supported
 
-    const bool requires_storage_not_low_;  // Not supported
+    const bool requires_storage_not_low;  // Not supported
 
-    Constraints(NetworkType networkType, bool requiresBatteryNotLow = false,
-                bool requiresCharging = false, bool requiresDeviceIdle = false,
-                bool requiresStorageNotLow = false)
-        : network_type_(networkType),
-          requires_battery_not_low_(requiresBatteryNotLow),
-          requires_charging_(requiresCharging),
-          requires_device_idle_(requiresDeviceIdle),
-          requires_storage_not_low_(requiresStorageNotLow) {}
+    Constraints(NetworkType network_type, bool requires_battery_not_low = false,
+                bool requires_charging = false,
+                bool requires_device_idle = false,
+                bool requires_storage_not_low = false)
+        : network_type(network_type),
+          requires_battery_not_low(requires_battery_not_low),
+          requires_charging(requires_charging),
+          requires_device_idle(requires_device_idle),
+          requires_storage_not_low(requires_storage_not_low) {}
 };
 
-class TaskType {
-   public:
-    TaskType(int32_t minimumbackOffDelay)
-        : minimum_backoff_delay_(minimumbackOffDelay){};
-    int32_t minimum_backoff_delay_;
+struct TaskType {
+    TaskType(int32_t minimum_backoff_delay)
+        : minimum_backoff_delay(minimum_backoff_delay){};
+    int32_t minimum_backoff_delay;
     enum { kOneOff = 10000, kPeriodic = 15 * 60 * 1000 };
 };
 
-class BackoffPolicyTaskConfig {
-   public:
-    BackoffPolicy backoff_policy_;
+struct BackoffPolicyTaskConfig {
+    BackoffPolicy backoff_policy;
 
-    int32_t request_backoff_delay_;
-    int32_t min_backoff_mills_;
-    int32_t backoff_delay_;
+    int32_t request_backoff_delay;
+    int32_t min_backoff_mills;
+    int32_t backoff_delay;
 };
 
 #endif  // FLUTTER_PLUGIN_WORKMANAGER_OPTIONS_H_
