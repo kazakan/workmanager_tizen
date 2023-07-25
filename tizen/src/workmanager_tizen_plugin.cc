@@ -137,8 +137,7 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
             preference_is_existing(constants::keys::kDispatcherHandleKey,
                                    &initialized);
             if (!initialized) {
-                result->Error("1", constants::kNotInitializedErrMsg,
-                              flutter::EncodableValue(""));
+                result->Error("1", constants::kNotInitializedErrMsg, nullptr);
                 return;
             }
 
