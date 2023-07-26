@@ -136,20 +136,20 @@ NetworkType ExtractNetworkTypeFromMap(const flutter::EncodableMap &args) {
 }
 
 Constraints ExtractConstraintConfigFromMap(const flutter::EncodableMap &map) {
-    NetworkType requested_network_type = ExtractNetworkTypeFromMap(map);
-    bool requires_battery_not_low =
+    NetworkType network_type = ExtractNetworkTypeFromMap(map);
+    bool battery_not_low =
         GetOrNullFromEncodableMap<bool>(&map, kBatteryNotLowKey)
             .value_or(false);
-    bool requires_charging =
+    bool charging =
         GetOrNullFromEncodableMap<bool>(&map, kChargingKey).value_or(false);
-    bool requires_device_idle =
+    bool device_idle =
         GetOrNullFromEncodableMap<bool>(&map, kDeviceidlekey).value_or(false);
-    bool requires_storage_not_low =
+    bool storage_not_low =
         GetOrNullFromEncodableMap<bool>(&map, kStorageNotLowKey)
             .value_or(false);
 
-    return Constraints(requested_network_type, requires_battery_not_low,
-                       requires_charging, requires_storage_not_low);
+    return Constraints(network_type, battery_not_low, charging,
+                       storage_not_low);
 }
 
 #endif

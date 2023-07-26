@@ -22,23 +22,23 @@ enum class BackoffPolicy { kExponential, kLinear };
 struct Constraints {
     const NetworkType network_type;
 
-    const bool requires_battery_not_low;
+    const bool battery_not_low;
 
-    const bool requires_charging;
+    const bool charging;
 
-    const bool requires_device_idle;  // Not supported
+    const bool device_idle;  // Not supported
 
-    const bool requires_storage_not_low;  // Not supported
+    const bool storage_not_low;  // Not supported
 
-    Constraints(NetworkType network_type, bool requires_battery_not_low = false,
-                bool requires_charging = false,
-                bool requires_device_idle = false,
-                bool requires_storage_not_low = false)
+    Constraints(NetworkType network_type, bool battery_not_low = false,
+                bool charging = false,
+                bool device_idle = false,
+                bool storage_not_low = false)
         : network_type(network_type),
-          requires_battery_not_low(requires_battery_not_low),
-          requires_charging(requires_charging),
-          requires_device_idle(requires_device_idle),
-          requires_storage_not_low(requires_storage_not_low) {}
+          battery_not_low(battery_not_low),
+          charging(charging),
+          device_idle(device_idle),
+          storage_not_low(storage_not_low) {}
 };
 
 struct TaskType {

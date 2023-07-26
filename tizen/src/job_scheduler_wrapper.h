@@ -16,12 +16,13 @@ class JobScheduler {
 
     void SetJobConstraints(job_info_h job_info,
                            const Constraints& constraints) {
-        job_info_set_requires_battery_not_low(
-            job_info, constraints.requires_battery_not_low);
-        job_info_set_requires_charging(job_info, constraints.requires_charging);
+        job_info_set_requires_battery_not_low(job_info,
+                                              constraints.battery_not_low);
+        job_info_set_requires_charging(job_info, constraints.charging);
     }
 
-    void RegisterJob(const RegisterTaskInfo& task, const bool isPeriodic = false) {
+    void RegisterJob(const RegisterTaskInfo& task,
+                     const bool isPeriodic = false) {
         job_info_h job_info;
         job_info_create(&job_info);
 
