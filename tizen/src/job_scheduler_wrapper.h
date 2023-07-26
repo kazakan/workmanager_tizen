@@ -21,28 +21,27 @@ class JobScheduler {
         job_info_set_requires_charging(job_info, constraints.requires_charging);
     }
 
-    void RegisterOneOffJob(const OneoffTask& task) {
+    void RegisterJob(const RegisterTask& task, const bool isPeriodic = false) {
         job_info_h job_info;
         job_info_create(&job_info);
-        job_info_set_once(job_info, true);
+
+        if (isPeriodic) {
+            job_info_set_periodic(job_info,
+                                  task.frequency_in_seconds.value_or(1));
+            job_info_set_persistent(job_info, true);
+        } else {
+            job_info_set_once(job_info, true);
+        }
+
         job_scheduler_schedule(job_info, task.unique_name.c_str());
         job_info_destroy(job_info);
     }
 
-    void RegisterPeriodicJob(const PeriodicTask& task) {
-        job_info_h job_info;
-        job_info_create(&job_info);
-        job_info_set_periodic(job_info, task.frequency_in_seconds);
-        job_info_set_persistent(job_info, true);
-        job_scheduler_schedule(job_info, task.unique_name.c_str());
-        job_info_destroy(job_info);
-    }
-
-    void CancelByTag(const CancelByTagTask& task) {
+    void CancelByTag(const CancelTaskInfo& task) {
         // TODO : implement
     }
 
-    void CancelByUniqueName(const CancelByNameTask& task) {
+    void CancelByUniqueName(const CancelTaskInfo& task) {
         job_scheduler_cancel(task.name.c_str());
     }
 

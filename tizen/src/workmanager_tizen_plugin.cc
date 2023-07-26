@@ -128,10 +128,11 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
                 GetOrNullFromEncodableMap<std::string>(
                     &map, constants::keys::kPayloadKey);
 
-            const auto& call = OneoffTask(
-                is_debug_mode, unique_name, task_name, existing_work_policy,
-                initial_delay_seconds, constraints_config,
-                backoff_policy_config, out_of_quota_policy, tag, payload);
+            const auto& call =
+                RegisterTask(is_debug_mode, unique_name, task_name,
+                             existing_work_policy, initial_delay_seconds,
+                             constraints_config, backoff_policy_config,
+                             out_of_quota_policy, std::nullopt, tag, payload);
 
             bool initialized = false;
             preference_is_existing(constants::keys::kDispatcherHandleKey,
@@ -142,7 +143,7 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
             }
 
             JobScheduler job_scheduler;
-            job_scheduler.RegisterOneOffJob(call);
+            job_scheduler.RegisterJob(call,false);
 
             result->Success();
         } else {
@@ -192,17 +193,18 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
                       tag.value_or("no tag").c_str(),
                       payload.value_or("no payload").c_str());
 
-            const auto& call = PeriodicTask(
+            const auto& call = RegisterTask(
                 is_debug_mode, unique_name, task_name, existing_work_policy,
-                frequency_seconds, initial_delay_seconds, constraints_config,
-                backoff_policy_config, out_of_quota_policy, tag, payload);
+                initial_delay_seconds, constraints_config,
+                backoff_policy_config, out_of_quota_policy, frequency_seconds,
+                tag, payload);
 
             JobScheduler job_scheduler;
 
             LOG_DEBUG("Periodictask name=%s freq=%d", call.unique_name.c_str(),
                       call.frequency_in_seconds);
 
-            job_scheduler.RegisterPeriodicJob(call);
+            job_scheduler.RegisterJob(call,true);
 
             result->Success();
         } else {
@@ -219,10 +221,11 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
             auto value = GetOrNullFromEncodableMap<std::string>(
                 &map, constants::keys::kCancelTaskTagKey);
             if (value.has_value()) {
-                const auto& call = CancelByTagTask(value.value());
+                auto taskInfo = CancelTaskInfo();
+                taskInfo.tag = value.value();
 
                 JobScheduler job_scheduler;
-                job_scheduler.CancelByTag(call);
+                job_scheduler.CancelByTag(taskInfo);
 
                 result->Success();
                 return;
@@ -239,9 +242,11 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
             auto value = GetOrNullFromEncodableMap<std::string>(
                 &map, constants::keys::kCancelTaskUniqueNameKey);
             if (value.has_value()) {
-                const auto& call = CancelByNameTask(value.value());
+                auto taskInfo = CancelTaskInfo();
+                taskInfo.name = value.value();
+
                 JobScheduler job_scheduler;
-                job_scheduler.CancelByUniqueName(call);
+                job_scheduler.CancelByUniqueName(taskInfo);
 
                 result->Success();
                 return;
