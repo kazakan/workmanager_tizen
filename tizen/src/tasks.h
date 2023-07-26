@@ -7,8 +7,8 @@
 
 #include "options.h"
 
-struct InitializeTask {
-    InitializeTask(int32_t callback_dispathcer_handler_key,
+struct InitializeTaskInfo {
+    InitializeTaskInfo(int32_t callback_dispathcer_handler_key,
                    bool is_in_debug_mode)
         : callback_dispathcer_handler_key(callback_dispathcer_handler_key),
           is_in_debug_mode(is_in_debug_mode){};
@@ -17,8 +17,8 @@ struct InitializeTask {
     bool is_in_debug_mode = false;
 };
 
-struct RegisterTask {
-    RegisterTask(bool is_in_debug_mode, std::string unique_name,
+struct RegisterTaskInfo {
+    RegisterTaskInfo(bool is_in_debug_mode, std::string unique_name,
                  std::string task_name, ExistingWorkPolicy existing_work_policy,
                  int32_t initial_delay_seconds, Constraints constraints_config,
                  std::optional<BackoffPolicyTaskConfig> backoff_policy_config,

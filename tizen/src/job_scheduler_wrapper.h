@@ -21,7 +21,7 @@ class JobScheduler {
         job_info_set_requires_charging(job_info, constraints.requires_charging);
     }
 
-    void RegisterJob(const RegisterTask& task, const bool isPeriodic = false) {
+    void RegisterJob(const RegisterTaskInfo& task, const bool isPeriodic = false) {
         job_info_h job_info;
         job_info_create(&job_info);
 

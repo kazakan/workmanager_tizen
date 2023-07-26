@@ -81,7 +81,7 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
                 constants::keys::kIsInDebugModeKey)]);
             int64_t handle = std::get<int64_t>(
                 map[flutter::EncodableValue(constants::keys::kCallhandlekey)]);
-            const auto& call = InitializeTask(handle, isDebugMode);
+            const auto& call = InitializeTaskInfo(handle, isDebugMode);
 
             preference_set_int(constants::keys::kDispatcherHandleKey,
                                call.callback_dispathcer_handler_key);
@@ -123,7 +123,7 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
                       tag.value_or("no tag").c_str(),
                       payload.value_or("no payload").c_str());
 
-            const auto& call = RegisterTask(
+            const auto& call = RegisterTaskInfo(
                 is_debug_mode, unique_name, task_name, existing_work_policy,
                 initial_delay_seconds, constraints_config,
                 backoff_policy_config, out_of_quota_policy, frequency_seconds,
