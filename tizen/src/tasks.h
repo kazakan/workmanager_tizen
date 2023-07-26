@@ -55,7 +55,7 @@ struct CancelTaskInfo {
     std::string tag;
 };
 
-struct FailedTask {
+struct FailedTaskInfo {
     std::string code;
 };
 
