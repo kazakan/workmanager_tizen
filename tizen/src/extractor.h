@@ -54,7 +54,6 @@ ExistingWorkPolicy StringToExistingWorkPolicy(const std::string &str) {
     } else if (str == kUpdate) {
         return ExistingWorkPolicy::kUpdate;
     }
-
     return ExistingWorkPolicy::kKeep;
 }
 
@@ -87,7 +86,6 @@ NetworkType StringToNetworkType(const std::string &str) {
     } else if (str == kTemporarilyUnmetered) {
         return NetworkType::kTemporarilyUnmetered;
     }
-
     return NetworkType::kNotRequired;
 }
 
