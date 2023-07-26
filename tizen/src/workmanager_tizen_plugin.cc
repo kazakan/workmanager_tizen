@@ -216,6 +216,7 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
             if (!std::holds_alternative<flutter::EncodableMap>(args)) {
                 result->Error("WRONG ARGS",
                               "No proper argument provided for background");
+                return;
             }
             flutter::EncodableMap map = std::get<flutter::EncodableMap>(args);
             auto dart_task =
