@@ -25,26 +25,26 @@ const char *kDeviceidlekey = "requiresDeviceIdle";
 const char *kStorageNotLowKey = "requiresStorageNotLow";
 
 // NetworkType
-const char *kConnected = "CONNECTED";
-const char *kMetered = "METERED";
-const char *kNotRequired = "NOT_REQUIRED";
-const char *kNotRoaming = "NOT_ROAMING";
-const char *kUnmetered = "UNMETERED";
-const char *kTemporarilyUnmetered = "TEMPORARILY_UNMETERED";
+const char *kConnected = "connectd";
+const char *kMetered = "metered";
+const char *kNotRequired = "not_required";
+const char *kNotRoaming = "not_roaming";
+const char *kUnmetered = "unmetered";
+const char *kTemporarilyUnmetered = "temporarily_unmetered";
 
 // ExistingWorkPolicy
-const char *kReplace = "REPLACE";
-const char *kKeep = "KEEP";
-const char *kAppend = "APPEND";
-const char *kUpdate = "UPDATE";
+const char *kReplace = "replace";
+const char *kKeep = "keep";
+const char *kAppend = "append";
+const char *kUpdate = "update";
 
 // BackOffPolicy
-const char *kExponential = "EXPONENTIAL";
-const char *kLinear = "LINEAR";
+const char *kExponential = "exponential";
+const char *kLinear = "linear";
 
 // OutofQuotaPolicy
-const char *kRunAsNonExpectedWorkRequest = "RUN_AS_NON_EXPEDITED_WORK_REQUEST";
-const char *kDropWorkRequest = "DROP_WORK_REQUEST";
+const char *kRunAsNonExpectedWorkRequest = "run_as_non_expedited_work_request";
+const char *kDropWorkRequest = "drop_work_request";
 
 ExistingWorkPolicy ExtractExistingWorkPolicyFromMap(
     const flutter::EncodableMap &map) {
@@ -52,8 +52,6 @@ ExistingWorkPolicy ExtractExistingWorkPolicyFromMap(
     bool succeed = GetValueFromEncodableMap<std::string>(
         &map, kExistingWorkpolicykey, value);
     if (succeed) {
-        Upper(value);
-
         if (value == kReplace) {
             return ExistingWorkPolicy::kReplace;
         } else if (value == kKeep) {
@@ -104,8 +102,6 @@ std::optional<OutOfQuotaPolicy> ExtractOutOfQuotaPolicyFromMap(
         return std::nullopt;
     }
 
-    Upper(value.value());
-
     if (value.value() == kRunAsNonExpectedWorkRequest) {
         return OutOfQuotaPolicy::kRunAsNonExpeditedWorkRequest;
     } else if (value.value() == kDropWorkRequest) {
@@ -121,8 +117,6 @@ NetworkType ExtractNetworkTypeFromMap(const flutter::EncodableMap &args) {
     if (!value.has_value()) {
         return NetworkType::kNotRequired;
     }
-
-    Upper(value.value());
 
     if (value.value() == kConnected) {
         return NetworkType::kConnected;
