@@ -46,44 +46,71 @@ const char *kLinear = "linear";
 const char *kRunAsNonExpectedWorkRequest = "run_as_non_expedited_work_request";
 const char *kDropWorkRequest = "drop_work_request";
 
-ExistingWorkPolicy ExtractExistingWorkPolicyFromMap(
-    const flutter::EncodableMap &map) {
-    std::string value;
-    bool succeed = GetValueFromEncodableMap<std::string>(
-        &map, kExistingWorkpolicykey, value);
-    if (succeed) {
-        if (value == kReplace) {
-            return ExistingWorkPolicy::kReplace;
-        } else if (value == kKeep) {
-            return ExistingWorkPolicy::kKeep;
-        } else if (value == kAppend) {
-            return ExistingWorkPolicy::kAppend;
-        } else if (value == kUpdate) {
-            return ExistingWorkPolicy::kUpdate;
-        }
+ExistingWorkPolicy StringToExistingWorkPolicy(const std::string &str) {
+    if (str == kReplace) {
+        return ExistingWorkPolicy::kReplace;
+    } else if (str == kAppend) {
+        return ExistingWorkPolicy::kAppend;
+    } else if (str == kUpdate) {
+        return ExistingWorkPolicy::kUpdate;
     }
+
     return ExistingWorkPolicy::kKeep;
 }
 
+BackoffPolicy StringToBackoffPolicy(const std::string &str) {
+    if (str == kExponential) {
+        return BackoffPolicy::kExponential;
+    }
+    return BackoffPolicy::kLinear;
+}
+
+std::optional<OutOfQuotaPolicy> StringToOutOfQuotaPolicy(
+    const std::string &str) {
+    if (str == kRunAsNonExpectedWorkRequest) {
+        return OutOfQuotaPolicy::kRunAsNonExpeditedWorkRequest;
+    } else if (str == kDropWorkRequest) {
+        return OutOfQuotaPolicy::kDropWorkRequest;
+    }
+    return std::nullopt;
+}
+
+NetworkType StringToNetworkType(const std::string &str) {
+    if (str == kConnected) {
+        return NetworkType::kConnected;
+    } else if (str == kMetered) {
+        return NetworkType::kMetered;
+    } else if (str == kNotRoaming) {
+        return NetworkType::kNotRoaming;
+    } else if (str == kUnmetered) {
+        return NetworkType::kUnmetered;
+    } else if (str == kTemporarilyUnmetered) {
+        return NetworkType::kTemporarilyUnmetered;
+    }
+
+    return NetworkType::kNotRequired;
+}
+
+ExistingWorkPolicy ExtractExistingWorkPolicyFromMap(
+    const flutter::EncodableMap &map) {
+    std::string value;
+    GetValueFromEncodableMap<std::string>(&map, kExistingWorkpolicykey, value);
+    return StringToExistingWorkPolicy(value);
+}
+
 std::optional<BackoffPolicyTaskConfig> ExtractBackoffPolicyConfigFromMap(
-    const flutter::EncodableMap &map, TaskType task_type) {
+    const flutter::EncodableMap &map, int32_t minimum_backoff_delay) {
     std::string value;
     if (!GetValueFromEncodableMap(&map, kBackOffPolicyTypeKey, value)) {
         return std::nullopt;
     }
 
-    BackoffPolicy backoff_policy;
-    if (value == kExponential) {
-        backoff_policy = BackoffPolicy::kExponential;
-    } else {
-        backoff_policy = BackoffPolicy::kLinear;
-    }
+    BackoffPolicy backoff_policy = StringToBackoffPolicy(value);
 
     int32_t requested_backoff_delay =
         GetOrNullFromEncodableMap<int32_t>(&map, kBackOffPolicyDelayMillisKey)
             .value_or(15 * 6 * 1000) /
         1000;
-    int32_t minimum_backoff_delay = task_type.minimum_backoff_delay;
 
     BackoffPolicyTaskConfig ret;
     ret.backoff_policy = backoff_policy;
@@ -102,13 +129,7 @@ std::optional<OutOfQuotaPolicy> ExtractOutOfQuotaPolicyFromMap(
         return std::nullopt;
     }
 
-    if (value.value() == kRunAsNonExpectedWorkRequest) {
-        return OutOfQuotaPolicy::kRunAsNonExpeditedWorkRequest;
-    } else if (value.value() == kDropWorkRequest) {
-        return OutOfQuotaPolicy::kDropWorkRequest;
-    }
-
-    return std::nullopt;
+    return StringToOutOfQuotaPolicy(value.value());
 }
 
 NetworkType ExtractNetworkTypeFromMap(const flutter::EncodableMap &args) {
@@ -118,21 +139,7 @@ NetworkType ExtractNetworkTypeFromMap(const flutter::EncodableMap &args) {
         return NetworkType::kNotRequired;
     }
 
-    if (value.value() == kConnected) {
-        return NetworkType::kConnected;
-    } else if (value.value() == kMetered) {
-        return NetworkType::kMetered;
-    } else if (value.value() == kNotRequired) {
-        return NetworkType::kNotRequired;
-    } else if (value.value() == kNotRoaming) {
-        return NetworkType::kNotRoaming;
-    } else if (value.value() == kUnmetered) {
-        return NetworkType::kUnmetered;
-    } else if (value.value() == kTemporarilyUnmetered) {
-        return NetworkType::kTemporarilyUnmetered;
-    }
-
-    return NetworkType::kNotRequired;
+    return StringToNetworkType(value.value());
 }
 
 Constraints ExtractConstraintConfigFromMap(const flutter::EncodableMap &map) {

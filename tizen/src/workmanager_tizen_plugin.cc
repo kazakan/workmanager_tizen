@@ -67,6 +67,9 @@ const char *kNotInitializedErrMsg =
     "The `callbackDispatcher` is a top level function. See example in "
     "repository.";
 
+const int32_t kMinBackOffPeriodic = 15 * 60 * 1000;
+const int32_t kMinBackOffOneOff = 10 * 1000;
+
 class WorkmanagerTizenPlugin : public flutter::Plugin {
    public:
     static void RegisterWithRegistrar(flutter::PluginRegistrar *registrar) {
@@ -133,6 +136,8 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
             result->Success();
         } else if (method_name == kRegisterOneOffTask ||
                    method_name == kRegisterPeriodicTask) {
+            const bool isPeriodic = method_name == kRegisterPeriodicTask;
+
             bool is_debug_mode =
                 std::get<bool>(map[flutter::EncodableValue(kIsInDebugModeKey)]);
             std::string unique_name = std::get<std::string>(
@@ -155,8 +160,8 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
             std::optional<OutOfQuotaPolicy> out_of_quota_policy =
                 ExtractOutOfQuotaPolicyFromMap(map);
             std::optional<BackoffPolicyTaskConfig> backoff_policy_config =
-                ExtractBackoffPolicyConfigFromMap(map,
-                                                  TaskType(TaskType::kOneOff));
+                ExtractBackoffPolicyConfigFromMap(
+                    map, isPeriodic ? kMinBackOffPeriodic : kMinBackOffOneOff);
             std::optional<std::string> payload =
                 GetOrNullFromEncodableMap<std::string>(&map, kPayloadKey);
 
@@ -169,7 +174,6 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
                 initial_delay_seconds, constraints_config,
                 backoff_policy_config, out_of_quota_policy, frequency_seconds,
                 tag, payload);
-            const bool isPeriodic = method_name == kRegisterPeriodicTask;
 
             job_scheduler.RegisterJob(info, isPeriodic);
 
