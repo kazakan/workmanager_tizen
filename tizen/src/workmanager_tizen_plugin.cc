@@ -59,29 +59,24 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
                                std::unique_ptr<FlMethodResult> result) {
         const auto method_name = call.method_name();
         const auto& arguments = *call.arguments();
+        JobScheduler job_scheduler;
+
+        if (call.method_name() == constants::methods::kCancelAllTasks) {
+            job_scheduler.CancelAll();
+
+            result->Success();
+            return;
+        }
+
+        // TODO : Unify error codes with a constant
+        if (!std::holds_alternative<flutter::EncodableMap>(arguments)) {
+            result->Error("WRONG_ARGS", "No argument provided");
+            return;
+        }
+
+        flutter::EncodableMap map = std::get<flutter::EncodableMap>(arguments);
 
         if (method_name == constants::methods::kInitialize) {
-            HandleInitializeTask(arguments, std::move(result));
-        } else if (method_name == constants::methods::kRegisterOneOffTask) {
-            HandleOneOffTask(arguments, std::move(result));
-        } else if (method_name == constants::methods::kRegisterPeriodicTask) {
-            HandlePeriodicTask(arguments, std::move(result));
-        } else if (method_name == constants::methods::kCancelTaskByUniqueName) {
-            HandleCancelByName(arguments, std::move(result));
-        } else if (method_name == constants::methods::kCancelTaskByTag) {
-            HandleCancelByTag(arguments, std::move(result));
-        } else if (call.method_name() == constants::methods::kCancelAllTasks) {
-            HandleCancelAll(std::move(result));
-        } else {
-            result->NotImplemented();
-        }
-    }
-
-    void HandleInitializeTask(const flutter::EncodableValue& arguments,
-                              std::unique_ptr<FlMethodResult> result) {
-        if (std::holds_alternative<flutter::EncodableMap>(arguments)) {
-            flutter::EncodableMap map =
-                std::get<flutter::EncodableMap>(arguments);
             bool isDebugMode = std::get<bool>(map[flutter::EncodableValue(
                 constants::keys::kIsInDebugModeKey)]);
             int64_t handle = std::get<int64_t>(
@@ -91,73 +86,8 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
             preference_set_int(constants::keys::kDispatcherHandleKey,
                                call.callback_dispathcer_handler_key);
             result->Success();
-        } else {
-            result->Error("WRONG_ARGS", "Wrong argument for Initialize");
-        }
-    }
-
-    void HandleOneOffTask(const flutter::EncodableValue& arguments,
-                          std::unique_ptr<FlMethodResult> result) {
-        if (std::holds_alternative<flutter::EncodableMap>(arguments)) {
-            flutter::EncodableMap map =
-                std::get<flutter::EncodableMap>(arguments);
-            bool is_debug_mode = std::get<bool>(map[flutter::EncodableValue(
-                constants::keys::kIsInDebugModeKey)]);
-            std::string unique_name = std::get<std::string>(
-                map[flutter::EncodableValue(constants::keys::kUniquenameKey)]);
-            std::string task_name = std::get<std::string>(
-                map[flutter::EncodableValue(constants::keys::kNameValueKey)]);
-            std::optional<std::string> tag =
-                GetOrNullFromEncodableMap<std::string>(
-                    &map, constants::keys::kTagKey);
-            ExistingWorkPolicy existing_work_policy =
-                ExtractExistingWorkPolicyFromMap(map);
-            int32_t initial_delay_seconds =
-                GetOrNullFromEncodableMap<int32_t>(
-                    &map, constants::keys::kInitialDelaySecondsKey)
-                    .value_or(0);
-
-            Constraints constraints_config =
-                ExtractConstraintConfigFromMap(map);
-            std::optional<OutOfQuotaPolicy> out_of_quota_policy =
-                ExtractOutOfQuotaPolicyFromMap(map);
-            std::optional<BackoffPolicyTaskConfig> backoff_policy_config =
-                ExtractBackoffPolicyConfigFromMap(map,
-                                                  TaskType(TaskType::kOneOff));
-            std::optional<std::string> payload =
-                GetOrNullFromEncodableMap<std::string>(
-                    &map, constants::keys::kPayloadKey);
-
-            const auto& call =
-                RegisterTask(is_debug_mode, unique_name, task_name,
-                             existing_work_policy, initial_delay_seconds,
-                             constraints_config, backoff_policy_config,
-                             out_of_quota_policy, std::nullopt, tag, payload);
-
-            bool initialized = false;
-            preference_is_existing(constants::keys::kDispatcherHandleKey,
-                                   &initialized);
-            if (!initialized) {
-                result->Error("1", constants::kNotInitializedErrMsg, nullptr);
-                return;
-            }
-
-            JobScheduler job_scheduler;
-            job_scheduler.RegisterJob(call,false);
-
-            result->Success();
-        } else {
-            result->Error("WRONG_ARGS",
-                          "Wrong argument for registerOneOffTask");
-        }
-    }
-
-    void HandlePeriodicTask(const flutter::EncodableValue& arguments,
-                            std::unique_ptr<FlMethodResult> result) {
-        if (std::holds_alternative<flutter::EncodableMap>(arguments)) {
-            flutter::EncodableMap map =
-                std::get<flutter::EncodableMap>(arguments);
-
+        } else if (method_name == constants::methods::kRegisterOneOffTask ||
+                   method_name == constants::methods::kRegisterPeriodicTask) {
             bool is_debug_mode = std::get<bool>(map[flutter::EncodableValue(
                 constants::keys::kIsInDebugModeKey)]);
             std::string unique_name = std::get<std::string>(
@@ -198,69 +128,43 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
                 initial_delay_seconds, constraints_config,
                 backoff_policy_config, out_of_quota_policy, frequency_seconds,
                 tag, payload);
+            const bool isPeriodic =
+                method_name == constants::methods::kRegisterPeriodicTask;
 
-            JobScheduler job_scheduler;
-
-            LOG_DEBUG("Periodictask name=%s freq=%d", call.unique_name.c_str(),
-                      call.frequency_in_seconds);
-
-            job_scheduler.RegisterJob(call,true);
+            job_scheduler.RegisterJob(call, isPeriodic);
 
             result->Success();
-        } else {
-            result->Error("WRONG_ARGS",
-                          "Wrong argument for registerPeriodicTask");
-        }
-    }
-
-    void HandleCancelByTag(const flutter::EncodableValue& arguments,
-                           std::unique_ptr<FlMethodResult> result) {
-        if (std::holds_alternative<flutter::EncodableMap>(arguments)) {
-            flutter::EncodableMap map =
-                std::get<flutter::EncodableMap>(arguments);
-            auto value = GetOrNullFromEncodableMap<std::string>(
-                &map, constants::keys::kCancelTaskTagKey);
-            if (value.has_value()) {
-                auto taskInfo = CancelTaskInfo();
-                taskInfo.tag = value.value();
-
-                JobScheduler job_scheduler;
-                job_scheduler.CancelByTag(taskInfo);
-
-                result->Success();
-                return;
-            }
-        }
-        result->Error("WRONG_ARGS", "Wrong argument for cancelTaskBytag");
-    }
-
-    void HandleCancelByName(const flutter::EncodableValue& arguments,
-                            std::unique_ptr<FlMethodResult> result) {
-        if (std::holds_alternative<flutter::EncodableMap>(arguments)) {
-            flutter::EncodableMap map =
-                std::get<flutter::EncodableMap>(arguments);
-            auto value = GetOrNullFromEncodableMap<std::string>(
+        } else if (method_name == constants::methods::kCancelTaskByUniqueName) {
+            auto name = GetOrNullFromEncodableMap<std::string>(
                 &map, constants::keys::kCancelTaskUniqueNameKey);
-            if (value.has_value()) {
-                auto taskInfo = CancelTaskInfo();
-                taskInfo.name = value.value();
-
-                JobScheduler job_scheduler;
-                job_scheduler.CancelByUniqueName(taskInfo);
-
-                result->Success();
+            if (!name.has_value()) {
+                result->Error("WRONG ARGS", "No name provided");
                 return;
             }
+            auto taskInfo = CancelTaskInfo();
+            taskInfo.name = name.value();
+
+            job_scheduler.CancelByUniqueName(taskInfo);
+
+            result->Success();
+
+        } else if (method_name == constants::methods::kCancelTaskByTag) {
+            auto tag = GetOrNullFromEncodableMap<std::string>(
+                &map, constants::keys::kCancelTaskTagKey);
+            if (!tag.has_value()) {
+                result->Error("WRONG ARGS", "No name provided");
+                return;
+            }
+            auto taskInfo = CancelTaskInfo();
+            taskInfo.tag = tag.value();
+
+            job_scheduler.CancelByTag(taskInfo);
+
+            result->Success();
+
+        } else {
+            result->NotImplemented();
         }
-        result->Error("WRONG_ARGS",
-                      "Wrong argument for cancelTaskByUniqueName");
-    }
-
-    void HandleCancelAll(std::unique_ptr<FlMethodResult> result) {
-        JobScheduler job_scheduler;
-        job_scheduler.CancelAll();
-
-        result->Success();
     }
 
     void HandleBackground(const FlMethodCall& call,
@@ -270,26 +174,27 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
         if (call.method_name() ==
             constants::methods::kBackgroundChannelInitialized) {
             const auto& args = *call.arguments();
-            if (std::holds_alternative<flutter::EncodableMap>(args)) {
-                flutter::EncodableMap map =
-                    std::get<flutter::EncodableMap>(args);
-                auto dart_task = map[flutter::EncodableValue(
-                    constants::keys::kBgChannelDartTaskKey)];
-                auto input_data = map[flutter::EncodableValue(
-                    constants::keys::kBgChannelInputDataKey)];
-
-                flutter::EncodableMap arg = {
-                    {flutter::EncodableValue(
-                         std::string(constants::keys::kBgChannelDartTaskKey)),
-                     dart_task},
-                    {flutter::EncodableValue(
-                         std::string(constants::keys::kBgChannelInputDataKey)),
-                     input_data}};
-
-                background_channel_->InvokeMethod(
-                    constants::methods::kOnResultSendMethod,
-                    std::make_unique<flutter::EncodableValue>(arg));
+            if (!std::holds_alternative<flutter::EncodableMap>(args)) {
+                result->Error("WRONG ARGS",
+                              "No proper argument provided for background");
             }
+            flutter::EncodableMap map = std::get<flutter::EncodableMap>(args);
+            auto dart_task = map[flutter::EncodableValue(
+                constants::keys::kBgChannelDartTaskKey)];
+            auto input_data = map[flutter::EncodableValue(
+                constants::keys::kBgChannelInputDataKey)];
+
+            flutter::EncodableMap arg = {
+                {flutter::EncodableValue(
+                     std::string(constants::keys::kBgChannelDartTaskKey)),
+                 dart_task},
+                {flutter::EncodableValue(
+                     std::string(constants::keys::kBgChannelInputDataKey)),
+                 input_data}};
+
+            background_channel_->InvokeMethod(
+                constants::methods::kOnResultSendMethod,
+                std::make_unique<flutter::EncodableValue>(arg));
         }
     }
 };
