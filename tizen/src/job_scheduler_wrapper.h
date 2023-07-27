@@ -10,12 +10,14 @@
 
 class JobScheduler {
    public:
+    ~JobScheduler() { job_scheduler_finish(); };
+
     JobScheduler(JobScheduler const&) = delete;
     JobScheduler& operator=(JobScheduler const&) = delete;
 
     static std::shared_ptr<JobScheduler> instance() {
         if (!instance_) {
-            instance_ = std::make_shared<JobScheduler>();
+            instance_.reset(new JobScheduler());
         }
         return instance_;
     }
@@ -73,7 +75,6 @@ class JobScheduler {
 
    private:
     JobScheduler() { job_scheduler_init(); };
-    ~JobScheduler() { job_scheduler_finish(); };
     static std::shared_ptr<JobScheduler> instance_;
 };
 
