@@ -56,6 +56,15 @@ class JobScheduler {
 
     void CancelAll() { job_scheduler_cancel_all(); }
 
+    job_service_h SetCallback(const std::string job_name,
+                                   job_service_callback_s& callback,
+                                   void* user_data) {
+        job_service_h service = nullptr;
+        job_scheduler_service_add(job_name.c_str(), &callback, user_data,
+                                  &service);
+        return service;
+    }
+
     std::vector<std::string> GetAllJobs() {
         std::vector<std::string> jobs;
 
