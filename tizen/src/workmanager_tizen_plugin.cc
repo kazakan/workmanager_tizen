@@ -119,7 +119,7 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
                                std::unique_ptr<FlMethodResult> result) {
         const auto method_name = call.method_name();
         const auto &arguments = *call.arguments();
-        auto& job_scheduler = JobScheduler::instance();
+        auto &job_scheduler = JobScheduler::instance();
 
         if (call.method_name() == kCancelAllTasks) {
             job_scheduler.CancelAll();
@@ -250,8 +250,9 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
 
     static bool CheckIsServiceApp() {
         char *app_id;
-        if (!app_manager_get_app_id(getpid(), &app_id)) {
-            dlog_print(DLOG_ERROR, LOG_TAG, "failed get app id");
+        int err = app_manager_get_app_id(getpid(), &app_id);
+        if (err) {
+            LOG_ERROR("Failed to get app id: %s", get_error_message(err));
             return false;
         }
         app_info_h app_info;
