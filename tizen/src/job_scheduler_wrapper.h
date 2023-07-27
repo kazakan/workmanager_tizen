@@ -10,16 +10,12 @@
 
 class JobScheduler {
    public:
-    ~JobScheduler() { job_scheduler_finish(); };
-
     JobScheduler(JobScheduler const&) = delete;
     JobScheduler& operator=(JobScheduler const&) = delete;
 
-    static std::shared_ptr<JobScheduler> instance() {
-        if (!instance_) {
-            instance_.reset(new JobScheduler());
-        }
-        return instance_;
+    static JobScheduler& instance() {
+        static JobScheduler instance;
+        return instance;
     }
 
     void SetJobConstraints(job_info_h job_info,
@@ -57,8 +53,8 @@ class JobScheduler {
     void CancelAll() { job_scheduler_cancel_all(); }
 
     job_service_h SetCallback(const std::string job_name,
-                                   job_service_callback_s& callback,
-                                   void* user_data) {
+                              job_service_callback_s& callback,
+                              void* user_data) {
         job_service_h service = nullptr;
         job_scheduler_service_add(job_name.c_str(), &callback, user_data,
                                   &service);
@@ -84,9 +80,7 @@ class JobScheduler {
 
    private:
     JobScheduler() { job_scheduler_init(); };
-    static std::shared_ptr<JobScheduler> instance_;
+    ~JobScheduler() { job_scheduler_finish(); };
 };
-
-std::shared_ptr<JobScheduler> JobScheduler::instance_(nullptr);
 
 #endif  // FLUTTER_PLUGIN_WORKMANAGER_JOB_SCHEDULER_WRAPPER_H_
