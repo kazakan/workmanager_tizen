@@ -1,5 +1,6 @@
 #include "workmanager_tizen_plugin.h"
 
+#include <app_manager.h>
 #include <app_preference.h>
 #include <flutter/encodable_value.h>
 #include <flutter/method_channel.h>
@@ -8,6 +9,7 @@
 #include <job_scheduler.h>
 #include <system_info.h>
 #include <tizen.h>
+#include <unistd.h>
 
 #include <memory>
 #include <string>
@@ -79,19 +81,28 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
             registrar->messenger(), kForegroundChannelName,
             &flutter::StandardMethodCodec::GetInstance());
 
-        plugin->background_channel_ = std::make_unique<FlMethodChannel>(
-            registrar->messenger(), kBackgroundChannelName,
-            &flutter::StandardMethodCodec::GetInstance());
-
         foreground_channel->SetMethodCallHandler(
             [plugin_pointer = plugin.get()](const auto &call, auto result) {
                 plugin_pointer->HandleWorkmanagerCall(call, std::move(result));
             });
 
-        plugin->background_channel_->SetMethodCallHandler(
-            [plugin_pointer = plugin.get()](const auto &call, auto result) {
-                plugin_pointer->HandleBackground(call, std::move(result));
-            });
+        is_service_app_ = CheckIsServiceApp();
+
+        if (is_service_app_) {
+            background_channel_ = std::make_unique<FlMethodChannel>(
+                registrar->messenger(), kBackgroundChannelName,
+                &flutter::StandardMethodCodec::GetInstance());
+
+            background_channel_.value()->SetMethodCallHandler(
+                [plugin_pointer = plugin.get()](const auto &call, auto result) {
+                    plugin_pointer->HandleBackground(call, std::move(result));
+                });
+
+            int handle_key;
+            if (!preference_get_int(kDispatcherHandleKey, &handle_key)) {
+                // TODO : implement
+            }
+        }
 
         registrar->AddPlugin(std::move(plugin));
     }
@@ -101,7 +112,8 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
     virtual ~WorkmanagerTizenPlugin() {}
 
    private:
-    std::unique_ptr<FlMethodChannel> background_channel_;
+    static std::optional<std::unique_ptr<FlMethodChannel>> background_channel_;
+    static bool is_service_app_;
 
     void HandleWorkmanagerCall(const FlMethodCall &call,
                                std::unique_ptr<FlMethodResult> result) {
@@ -230,12 +242,50 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
                 {flutter::EncodableValue(std::string(kBgChannelInputDataKey)),
                  input_data}};
 
-            background_channel_->InvokeMethod(
+            background_channel_.value()->InvokeMethod(
                 kOnResultSendMethod,
                 std::make_unique<flutter::EncodableValue>(arg));
         }
     }
+
+    static bool CheckIsServiceApp() {
+        char *app_id;
+        if (!app_manager_get_app_id(getpid(), &app_id)) {
+            dlog_print(DLOG_ERROR, LOG_TAG, "failed get app id");
+            return false;
+        }
+        app_info_h app_info;
+        app_info_app_component_type_e app_type;
+        app_info_create(app_id, &app_info);
+        app_info_get_app_component_type(app_info, &app_type);
+        return app_type == APP_INFO_APP_COMPONENT_TYPE_SERVICE_APP;
+    }
+
+    static void StartJobCallback(job_info_h job_info, void *user_data) {
+        if (!background_channel_.has_value()) {
+            return;
+        }
+
+        char *job_id = nullptr;
+        job_info_get_job_id(job_info, &job_id);
+
+        std::string payload(static_cast<char *>(user_data));
+
+        flutter::EncodableMap arg = {
+            {flutter::EncodableValue(kBgChannelInputDataKey),
+             flutter::EncodableValue(payload)},
+            {flutter::EncodableValue(kBgChannelDartTaskKey),
+             flutter::EncodableValue(std::string(job_id))}};
+
+        background_channel_.value()->InvokeMethod(
+            kOnResultSendMethod,
+            std::make_unique<flutter::EncodableValue>(arg));
+    }
 };
+
+std::optional<std::unique_ptr<FlMethodChannel>>
+    WorkmanagerTizenPlugin::background_channel_ = std::nullopt;
+bool WorkmanagerTizenPlugin::is_service_app_ = false;
 
 }  // namespace
 

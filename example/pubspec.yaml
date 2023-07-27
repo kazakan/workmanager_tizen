@@ -16,6 +16,7 @@ dependencies:
   workmanager: ^0.5.1
   workmanager_tizen:
     path: ../
+  tizen_log:
 
 dev_dependencies:
   flutter_test:
