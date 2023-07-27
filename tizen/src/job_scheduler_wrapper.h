@@ -60,7 +60,7 @@ class JobScheduler {
 
         err = job_scheduler_schedule(job_info, task.unique_name.c_str());
         if (err) {
-            LOG_ERROR("Failed to destroy job info: %s", get_error_message(err));
+            LOG_ERROR("Failed to schedule job: %s", get_error_message(err));
             return;
         }
         job_info_destroy(job_info);
