@@ -185,10 +185,8 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
                 result->Error("WRONG ARGS", "No name provided");
                 return;
             }
-            auto taskInfo = CancelTaskInfo();
-            taskInfo.name = name.value();
 
-            job_scheduler.CancelByUniqueName(taskInfo);
+            job_scheduler.CancelByUniqueName(name.value());
 
             result->Success();
 
@@ -199,10 +197,8 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
                 result->Error("WRONG ARGS", "No name provided");
                 return;
             }
-            auto taskInfo = CancelTaskInfo();
-            taskInfo.tag = tag.value();
 
-            job_scheduler.CancelByTag(taskInfo);
+            job_scheduler.CancelByTag(tag.value());
 
             result->Success();
 

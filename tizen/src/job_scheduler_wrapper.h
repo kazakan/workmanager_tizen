@@ -38,12 +38,12 @@ class JobScheduler {
         job_info_destroy(job_info);
     }
 
-    void CancelByTag(const CancelTaskInfo& task) {
+    void CancelByTag(const std::string& task) {
         // TODO : implement
     }
 
-    void CancelByUniqueName(const CancelTaskInfo& task) {
-        job_scheduler_cancel(task.name.c_str());
+    void CancelByUniqueName(const std::string& name) {
+        job_scheduler_cancel(name.c_str());
     }
 
     void CancelAll() { job_scheduler_cancel_all(); }

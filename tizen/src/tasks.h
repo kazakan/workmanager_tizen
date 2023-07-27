@@ -50,11 +50,6 @@ struct RegisterTaskInfo {
     std::optional<int32_t> frequency_in_seconds;
 };
 
-struct CancelTaskInfo {
-    std::string name;
-    std::string tag;
-};
-
 struct FailedTaskInfo {
     std::string code;
 };
