@@ -5,6 +5,7 @@
 
 #include <memory>
 
+#include "log.h"
 #include "options.h"
 #include "tasks.h"
 
@@ -28,17 +29,40 @@ class JobScheduler {
     void RegisterJob(const RegisterTaskInfo& task,
                      const bool isPeriodic = false) {
         job_info_h job_info;
-        job_info_create(&job_info);
-
-        if (isPeriodic) {
-            job_info_set_periodic(job_info,
-                                  task.frequency_in_seconds.value_or(1));
-            job_info_set_persistent(job_info, true);
-        } else {
-            job_info_set_once(job_info, true);
+        int err = job_info_create(&job_info);
+        if (err) {
+            LOG_ERROR("Failed to create job info: %s", get_error_message(err));
+            return;
         }
 
-        job_scheduler_schedule(job_info, task.unique_name.c_str());
+        if (isPeriodic) {
+            err = job_info_set_periodic(job_info,
+                                        task.frequency_in_seconds.value_or(1));
+            if (err) {
+                LOG_ERROR("Failed to set job info periodic: %s",
+                          get_error_message(err));
+                return;
+            }
+            err = job_info_set_persistent(job_info, true);
+            if (err) {
+                LOG_ERROR("Failed to set job info persistent: %s",
+                          get_error_message(err));
+                return;
+            }
+        } else {
+            err = job_info_set_once(job_info, true);
+            if (err) {
+                LOG_ERROR("Failed to set job info once: %s",
+                          get_error_message(err));
+                return;
+            }
+        }
+
+        err = job_scheduler_schedule(job_info, task.unique_name.c_str());
+        if (err) {
+            LOG_ERROR("Failed to destroy job info: %s", get_error_message(err));
+            return;
+        }
         job_info_destroy(job_info);
     }
 
@@ -47,7 +71,11 @@ class JobScheduler {
     }
 
     void CancelByUniqueName(const std::string& name) {
-        job_scheduler_cancel(name.c_str());
+        int err = job_scheduler_cancel(name.c_str());
+        if (err) {
+            LOG_ERROR("Failed to cancel job with name %s: %s", name.c_str(),
+                      get_error_message(err));
+        }
     }
 
     void CancelAll() { job_scheduler_cancel_all(); }
@@ -56,8 +84,13 @@ class JobScheduler {
                               job_service_callback_s& callback,
                               void* user_data) {
         job_service_h service = nullptr;
-        job_scheduler_service_add(job_name.c_str(), &callback, user_data,
-                                  &service);
+        int err = job_scheduler_service_add(job_name.c_str(), &callback,
+                                            user_data, &service);
+        if (err) {
+            LOG_ERROR("Failed to add service to job: %s",
+                      get_error_message(err));
+            return nullptr;
+        }
         return service;
     }
 
