@@ -107,10 +107,10 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
                                std::unique_ptr<FlMethodResult> result) {
         const auto method_name = call.method_name();
         const auto &arguments = *call.arguments();
-        JobScheduler job_scheduler;
+        auto job_scheduler = JobScheduler::instance();
 
         if (call.method_name() == kCancelAllTasks) {
-            job_scheduler.CancelAll();
+            job_scheduler->CancelAll();
 
             result->Success();
             return;
@@ -175,7 +175,7 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
                 backoff_policy_config, out_of_quota_policy, frequency_seconds,
                 tag, payload);
 
-            job_scheduler.RegisterJob(info, isPeriodic);
+            job_scheduler->RegisterJob(info, isPeriodic);
 
             result->Success();
         } else if (method_name == kCancelTaskByUniqueName) {
@@ -186,7 +186,7 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
                 return;
             }
 
-            job_scheduler.CancelByUniqueName(name.value());
+            job_scheduler->CancelByUniqueName(name.value());
 
             result->Success();
 
@@ -198,7 +198,7 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
                 return;
             }
 
-            job_scheduler.CancelByTag(tag.value());
+            job_scheduler->CancelByTag(tag.value());
 
             result->Success();
 

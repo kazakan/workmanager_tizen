@@ -3,16 +3,22 @@
 
 #include <job_scheduler.h>
 
+#include <memory>
+
 #include "options.h"
 #include "tasks.h"
 
 class JobScheduler {
    public:
-    JobScheduler() { job_scheduler_init(); };
-    ~JobScheduler() { job_scheduler_finish(); };
-
     JobScheduler(JobScheduler const&) = delete;
     JobScheduler& operator=(JobScheduler const&) = delete;
+
+    static std::shared_ptr<JobScheduler> instance() {
+        if (!instance_) {
+            instance_ = std::make_shared<JobScheduler>();
+        }
+        return instance_;
+    }
 
     void SetJobConstraints(job_info_h job_info,
                            const Constraints& constraints) {
@@ -64,6 +70,13 @@ class JobScheduler {
 
         return jobs;
     }
+
+   private:
+    JobScheduler() { job_scheduler_init(); };
+    ~JobScheduler() { job_scheduler_finish(); };
+    static std::shared_ptr<JobScheduler> instance_;
 };
+
+std::shared_ptr<JobScheduler> JobScheduler::instance_(nullptr);
 
 #endif  // FLUTTER_PLUGIN_WORKMANAGER_JOB_SCHEDULER_WRAPPER_H_
