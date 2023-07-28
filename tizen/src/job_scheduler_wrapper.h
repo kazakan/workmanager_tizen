@@ -19,11 +19,35 @@ class JobScheduler {
         return instance;
     }
 
-    void SetJobConstraints(job_info_h job_info,
-                           const Constraints& constraints) {
-        job_info_set_requires_battery_not_low(job_info,
-                                              constraints.battery_not_low);
-        job_info_set_requires_charging(job_info, constraints.charging);
+    int SetJobConstraints(job_info_h job_info, const Constraints& constraints) {
+        int err = job_info_set_requires_battery_not_low(
+            job_info, constraints.battery_not_low);
+        if (err) {
+            LOG_ERROR("Failed to set job info battery_not_low: %s",
+                      get_error_message(err));
+            return err;
+        }
+
+        err = job_info_set_requires_charging(job_info, constraints.charging);
+        if (err) {
+            LOG_ERROR("Failed to set job info charging: %s",
+                      get_error_message(err));
+            return err;
+        }
+
+        switch (constraints.network_type) {
+            case NetworkType::kConnected:
+            case NetworkType::kUnmetered:
+                err = job_info_set_requires_wifi_connection(job_info, true);
+                if (err) {
+                    LOG_ERROR("Failed to set job info wifi_connection: %s",
+                              get_error_message(err));
+                    return err;
+                }
+                break;
+        }
+
+        return err;
     }
 
     void RegisterJob(const RegisterTaskInfo& task,
@@ -33,6 +57,13 @@ class JobScheduler {
         if (err) {
             LOG_ERROR("Failed to create job info: %s", get_error_message(err));
             return;
+        }
+
+        if (task.constraints_config.has_value()) {
+            err = SetJobConstraints(job_info, task.constraints_config.value());
+            if (err) {
+                return;
+            }
         }
 
         if (isPeriodic) {
