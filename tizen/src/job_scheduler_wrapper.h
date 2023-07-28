@@ -58,10 +58,24 @@ class JobScheduler {
             }
         }
 
-        err = job_scheduler_schedule(job_info, task.unique_name.c_str());
+        err = job_scheduler_schedule(job_info, task.task_name.c_str());
         if (err) {
-            LOG_ERROR("Failed to schedule job: %s", get_error_message(err));
-            return;
+            if (err == JOB_ERROR_ALREADY_EXIST) {
+                switch (task.existing_work_policy) {
+                    case ExistingWorkPolicy::kReplace:
+                    case ExistingWorkPolicy::kUpdate:
+                        CancelByUniqueName(task.task_name);
+                        err = job_scheduler_schedule(job_info,
+                                                     task.task_name.c_str());
+                        if (err) {
+                            LOG_ERROR("Failed to schedule job: %s",
+                                      get_error_message(err));
+                        }
+                        break;
+                }
+            } else {
+                LOG_ERROR("Failed to schedule job: %s", get_error_message(err));
+            }
         }
         job_info_destroy(job_info);
     }
