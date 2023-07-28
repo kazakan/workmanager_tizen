@@ -91,6 +91,13 @@ class JobScheduler {
                 job_info_destroy(job_info);
                 return;
             }
+            err = job_info_set_persistent(job_info, false);
+            if (err) {
+                LOG_ERROR("Failed to set job non-persistent: %s",
+                          get_error_message(err));
+                job_info_destroy(job_info);
+                return;
+            }
         }
 
         err = job_scheduler_schedule(job_info, task.unique_name.c_str());
