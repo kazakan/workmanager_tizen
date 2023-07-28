@@ -114,6 +114,9 @@ class JobScheduler {
                                       get_error_message(err));
                         }
                         break;
+                    default:
+                        LOG_INFO("Job already exists but ignored. Job name: %s",
+                                 task.unique_name.c_str());
                 }
             } else {
                 LOG_ERROR("Failed to schedule job: %s", get_error_message(err));
