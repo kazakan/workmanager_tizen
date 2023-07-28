@@ -98,10 +98,18 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
                     plugin_pointer->HandleBackground(call, std::move(result));
                 });
 
-            int handle_key;
-            if (!preference_get_int(kDispatcherHandleKey, &handle_key)) {
-                // TODO : implement
+            auto &scheduler = JobScheduler::instance();
+            job_service_callback_s callback = {StartJobCallback,
+                                               StopJobCallback};
+            auto job_names = scheduler.GetAllJobs();
+
+            LOG_DEBUG("Show current jobs");
+            for (const auto &name : job_names) {
+                LOG_DEBUG("%s",name.c_str());
+                scheduler.SetCallback(name, callback, nullptr);
             }
+
+            LOG_DEBUG("Show current jobs - end");
         }
 
         registrar->AddPlugin(std::move(plugin));
@@ -275,6 +283,10 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
         background_channel_.value()->InvokeMethod(
             kOnResultSendMethod,
             std::make_unique<flutter::EncodableValue>(arg));
+    }
+
+    static void StopJobCallback(job_info_h job_info, void *user_data) {
+        // Currently do nothing.
     }
 };
 
