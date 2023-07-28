@@ -177,10 +177,6 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
             std::optional<std::string> payload =
                 GetOrNullFromEncodableMap<std::string>(&map, kPayloadKey);
 
-            LOG_DEBUG("freq=%ld tag=%s payload=%s", frequency_seconds,
-                      tag.value_or("no tag").c_str(),
-                      payload.value_or("no payload").c_str());
-
             const auto &info = RegisterTaskInfo(
                 is_debug_mode, unique_name, task_name, existing_work_policy,
                 initial_delay_seconds, constraints_config,
@@ -221,8 +217,6 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
 
     void HandleBackground(const FlMethodCall &call,
                           std::unique_ptr<FlMethodResult> result) {
-        LOG_DEBUG("Background call name =%s", call.method_name().c_str());
-
         if (call.method_name() == kBackgroundChannelInitialized) {
             const auto &args = *call.arguments();
             if (!std::holds_alternative<flutter::EncodableMap>(args)) {
