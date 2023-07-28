@@ -62,6 +62,7 @@ class JobScheduler {
         if (task.constraints_config.has_value()) {
             err = SetJobConstraints(job_info, task.constraints_config.value());
             if (err) {
+                job_info_destroy(job_info);
                 return;
             }
         }
@@ -72,12 +73,14 @@ class JobScheduler {
             if (err) {
                 LOG_ERROR("Failed to set job info periodic: %s",
                           get_error_message(err));
+                job_info_destroy(job_info);
                 return;
             }
             err = job_info_set_persistent(job_info, true);
             if (err) {
                 LOG_ERROR("Failed to set job info persistent: %s",
                           get_error_message(err));
+                job_info_destroy(job_info);
                 return;
             }
         } else {
@@ -85,6 +88,7 @@ class JobScheduler {
             if (err) {
                 LOG_ERROR("Failed to set job info once: %s",
                           get_error_message(err));
+                job_info_destroy(job_info);
                 return;
             }
         }
