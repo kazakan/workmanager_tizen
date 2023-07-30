@@ -1,5 +1,6 @@
 #include "workmanager_tizen_plugin.h"
 
+#include <app.h>
 #include <app_event.h>
 #include <app_manager.h>
 #include <app_preference.h>
@@ -114,7 +115,7 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
             std::string service_app_id = GetAppId().value();
             std::string event_id =
                 "event." + service_app_id.substr(0, service_app_id.size() - 8) +
-                kEventName;
+                "." + kEventName;
             int err = event_add_event_handler(
                 event_id.c_str(), TaskInfoCallback, nullptr, &handler);
         }
@@ -136,6 +137,8 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
         const auto &arguments = *call.arguments();
         auto &job_scheduler = JobScheduler::instance();
 
+        SendLaunchRequest((GetAppId().value() + "_service").c_str());
+
         if (call.method_name() == kCancelAllTasks) {
             job_scheduler.CancelAll();
 
@@ -150,6 +153,8 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
         }
 
         flutter::EncodableMap map = std::get<flutter::EncodableMap>(arguments);
+        std::string app_id = GetAppId().value();
+        std::string event_id = "event." + app_id + "." + kEventName;
 
         if (method_name == kInitialize) {
             bool isDebugMode =
@@ -205,6 +210,8 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
             bundle_add_str(bund, kUniquenameKey, unique_name.c_str());
             bundle_add_str(bund, kNameValueKey, task_name.c_str());
             bundle_add_str(bund, kTagKey, tag.c_str());
+            bundle_add_byte(bund, kExistingWorkpolicykey, &existing_work_policy,
+                            sizeof(ExistingWorkPolicy));
 
             bundle_add_byte(bund, kInitialDelaySecondsKey,
                             &initial_delay_seconds, 4);
@@ -216,10 +223,8 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
 
             bundle_add_byte(bund, kIsPeriodicKey, &isPeriodic, 1);
 
-            std::string app_id = GetAppId().value();
-            std::string event_id = "event." + app_id + kEventName;
-
             // TODO : ensure service is ON before publish
+            LOG_DEBUG("event_id: %s", event_id.c_str());
             int err = event_publish_app_event(event_id.c_str(), bund);
             if (err) {
                 LOG_ERROR("Failed publish event: %s", get_error_message(err));
@@ -240,7 +245,18 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
                 return;
             }
 
-            job_scheduler.CancelByUniqueName(name.value());
+            bundle *bund = nullptr;
+            bund = bundle_create();
+            bundle_add_str(bund, kMethodNameKey, method_name.c_str());
+            bundle_add_str(bund, kCancelTaskByUniqueName, name.value().c_str());
+
+            int err = event_publish_app_event(event_id.c_str(), bund);
+            if (err) {
+                LOG_ERROR("Failed publish event: %s", get_error_message(err));
+                result->Error("Error publish event", "Error occured.");
+                bundle_free(bund);
+                return;
+            }
 
             result->Success();
 
@@ -252,7 +268,20 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
                 return;
             }
 
-            job_scheduler.CancelByTag(tag.value());
+            bundle *bund = nullptr;
+            bund = bundle_create();
+            bundle_add_str(bund, kMethodNameKey, method_name.c_str());
+            bundle_add_str(bund, kCancelTaskTagKey, tag.value().c_str());
+
+            int err = event_publish_app_event(event_id.c_str(), bund);
+            if (err) {
+                LOG_ERROR("Failed publish event: %s", get_error_message(err));
+                result->Error("Error publish event", "Error occured.");
+                bundle_free(bund);
+                return;
+            }
+
+            bundle_free(bund);
 
             result->Success();
 
@@ -342,19 +371,7 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
         LOG_DEBUG("event_name is [%s]", event_name);
 
         size_t size;
-
         char *method_name = nullptr;
-
-        // TODO : handle for enums
-        bool *is_debug_mode = nullptr;
-        char *unique_name = nullptr;
-        char *task_name = nullptr;
-        char *tag = nullptr;
-
-        int32_t *initial_delay_seconds = nullptr;
-        int32_t *frequency_seconds = nullptr;
-        char *payload = nullptr;
-        bool *is_periodic = nullptr;
 
         bundle *bund = bundle_create();
         bundle_get_str(bund, kMethodNameKey, &method_name);
@@ -364,10 +381,25 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
 
         if (method_name_str == kRegisterOneOffTask ||
             method_name_str == kRegisterPeriodicTask) {
+            // TODO : handle for enums
+            bool *is_debug_mode = nullptr;
+            char *unique_name = nullptr;
+            char *task_name = nullptr;
+            char *tag = nullptr;
+
+            ExistingWorkPolicy *existing_work_policy = nullptr;
+
+            int32_t *initial_delay_seconds = nullptr;
+            int32_t *frequency_seconds = nullptr;
+            char *payload = nullptr;
+            bool *is_periodic = nullptr;
+
             bundle_get_byte(bund, kIsInDebugModeKey, (void **)&is_debug_mode,
                             &size);
             bundle_get_str(bund, kUniquenameKey, &unique_name);
             bundle_get_str(bund, kNameValueKey, &task_name);
+            bundle_get_byte(bund, kExistingWorkpolicykey,
+                            (void **)&existing_work_policy, &size);
 
             bundle_get_byte(bund, kInitialDelaySecondsKey,
                             (void **)&initial_delay_seconds, &size);
@@ -376,20 +408,47 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
             bundle_get_str(bund, kPayloadKey, &payload);
             bundle_get_byte(bund, kIsPeriodicKey, (void **)&is_periodic, &size);
 
-            const auto &info = RegisterTaskInfo(
-                is_debug_mode, unique_name, task_name, existing_work_policy,
-                initial_delay_seconds, constraints_config,
-                backoff_policy_config, out_of_quota_policy, frequency_seconds,
-                tag, payload);
+            /*
+                        job_scheduler.RegisterJob(
+                            is_debug_mode, unique_name, task_name,
+               *existing_work_policy, *initial_delay_seconds,
+               constraints_config, backoff_policy_config, out_of_quota_policy,
+               *is_periodic, *frequency_seconds, tag, payload);
+                            */
 
-            
-            job_scheduler.RegisterJob(info, *is_periodic);
-
-            bundle_free(bund);
         } else if (method_name_str == kCancelTaskByUniqueName) {
-            // TODO : Implement
+            char *unique_name;
+            bundle_get_str(bund, kUniquenameKey, &unique_name);
+
+            job_scheduler.CancelByUniqueName(unique_name);
+
         } else if (method_name_str == kCancelAllTasks) {
-            job_scheduler_cancel_all();
+            job_scheduler.CancelAll();
+        }
+
+        bundle_free(bund);
+    }
+
+    void SendLaunchRequest(const char *app_id) {
+        app_control_h control;
+        int ret = app_control_create(&control);
+        if (ret) {
+            LOG_ERROR("%s", get_error_message(ret));
+        }
+
+        ret = app_control_set_app_id(control, app_id);
+        if (ret) {
+            LOG_ERROR("%s", get_error_message(ret));
+        }
+
+        ret = app_control_send_launch_request(control, NULL, NULL);
+        if (ret) {
+            LOG_ERROR("%s", get_error_message(ret));
+        }
+
+        ret = app_control_destroy(control);
+        if (ret) {
+            LOG_ERROR("%s", get_error_message(ret));
         }
     }
 };

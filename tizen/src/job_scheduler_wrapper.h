@@ -50,8 +50,17 @@ class JobScheduler {
         return err;
     }
 
-    void RegisterJob(const RegisterTaskInfo& task,
-                     const bool isPeriodic = false) {
+    void RegisterJob(const bool is_debug_mode, const std::string& unique_name,
+                     const std::string& task_name,
+                     const ExistingWorkPolicy existing_work_policy,
+                     const int32_t initial_delay_seconds,
+                     const std::optional<Constraints>& constraints_config,
+                     const std::optional<BackoffPolicy>& backoff_policy_config,
+                     const std::optional<OutOfQuotaPolicy>& out_of_quota_policy,
+                     const bool isPeriodic = false,
+                     const int32_t frequency_seconds = 0,
+                     const std::string& tag = "",
+                     const std::string& payload = "") {
         job_info_h job_info;
         int err = job_info_create(&job_info);
         if (err) {
@@ -59,8 +68,8 @@ class JobScheduler {
             return;
         }
 
-        if (task.constraints_config.has_value()) {
-            err = SetJobConstraints(job_info, task.constraints_config.value());
+        if (constraints_config.has_value()) {
+            err = SetJobConstraints(job_info, constraints_config.value());
             if (err) {
                 job_info_destroy(job_info);
                 return;
@@ -68,7 +77,7 @@ class JobScheduler {
         }
 
         if (isPeriodic) {
-            err = job_info_set_periodic(job_info, task.frequency_in_seconds);
+            err = job_info_set_periodic(job_info, frequency_seconds);
             if (err) {
                 LOG_ERROR("Failed to set job info periodic: %s",
                           get_error_message(err));
@@ -99,15 +108,15 @@ class JobScheduler {
             }
         }
 
-        err = job_scheduler_schedule(job_info, task.unique_name.c_str());
+        err = job_scheduler_schedule(job_info, unique_name.c_str());
         if (err) {
             if (err == JOB_ERROR_ALREADY_EXIST) {
-                switch (task.existing_work_policy) {
+                switch (existing_work_policy) {
                     case ExistingWorkPolicy::kReplace:
                     case ExistingWorkPolicy::kUpdate:
-                        CancelByUniqueName(task.unique_name);
+                        CancelByUniqueName(unique_name);
                         err = job_scheduler_schedule(job_info,
-                                                     task.unique_name.c_str());
+                                                     unique_name.c_str());
                         if (err) {
                             LOG_ERROR("Failed to schedule job: %s",
                                       get_error_message(err));
@@ -115,7 +124,7 @@ class JobScheduler {
                         break;
                     default:
                         LOG_INFO("Job already exists but ignored. Job name: %s",
-                                 task.unique_name.c_str());
+                                 unique_name.c_str());
                 }
             } else {
                 LOG_ERROR("Failed to schedule job: %s", get_error_message(err));
