@@ -68,8 +68,7 @@ class JobScheduler {
         }
 
         if (isPeriodic) {
-            err = job_info_set_periodic(job_info,
-                                        task.frequency_in_seconds.value_or(1));
+            err = job_info_set_periodic(job_info, task.frequency_in_seconds);
             if (err) {
                 LOG_ERROR("Failed to set job info periodic: %s",
                           get_error_message(err));

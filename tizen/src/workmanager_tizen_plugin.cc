@@ -1,7 +1,9 @@
 #include "workmanager_tizen_plugin.h"
 
+#include <app_event.h>
 #include <app_manager.h>
 #include <app_preference.h>
+#include <bundle.h>
 #include <flutter/encodable_value.h>
 #include <flutter/method_channel.h>
 #include <flutter/plugin_registrar.h>
@@ -29,6 +31,7 @@ const char *kForegroundChannelName =
 const char *kBackgroundChannelName =
     "be.tramckrijte.workmanager/background_channel_work_manager";
 
+const char *kMethodNameKey = "methodName";
 const char *kInitialize = "initialize";
 const char *kRegisterOneOffTask = "registerOneOffTask";
 const char *kRegisterPeriodicTask = "registerPeriodicTask";
@@ -56,6 +59,8 @@ const char *kDispatcherHandleKey = "WMANAGER_TIZEN_DISPATCHER_HANDLE_KEY";
 
 const char *kPayloadKey = "inputData";
 
+const char *kIsPeriodicKey = "isPeriodic";
+
 const char *kNotInitializedErrMsg =
     "You have not properly initialized the Flutter WorkManager Package. "
     "You should ensure you have called the 'initialize' function first! "
@@ -71,6 +76,8 @@ const char *kNotInitializedErrMsg =
 
 const int32_t kMinBackOffPeriodic = 15 * 60 * 1000;
 const int32_t kMinBackOffOneOff = 10 * 1000;
+
+const char *kEventName = "pass_taskinfo_event";
 
 class WorkmanagerTizenPlugin : public flutter::Plugin {
    public:
@@ -103,13 +110,13 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
                                                StopJobCallback};
             auto job_names = scheduler.GetAllJobs();
 
-            LOG_DEBUG("Show current jobs");
-            for (const auto &name : job_names) {
-                LOG_DEBUG("%s",name.c_str());
-                scheduler.SetCallback(name, callback, nullptr);
-            }
-
-            LOG_DEBUG("Show current jobs - end");
+            event_handler_h handler;
+            std::string service_app_id = GetAppId().value();
+            std::string event_id =
+                "event." + service_app_id.substr(0, service_app_id.size() - 8) +
+                kEventName;
+            int err = event_add_event_handler(
+                event_id.c_str(), TaskInfoCallback, nullptr, &handler);
         }
 
         registrar->AddPlugin(std::move(plugin));
@@ -164,8 +171,9 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
                 map[flutter::EncodableValue(kUniquenameKey)]);
             std::string task_name = std::get<std::string>(
                 map[flutter::EncodableValue(kNameValueKey)]);
-            std::optional<std::string> tag =
-                GetOrNullFromEncodableMap<std::string>(&map, kTagKey);
+            std::string tag =
+                GetOrNullFromEncodableMap<std::string>(&map, kTagKey)
+                    .value_or("");
             ExistingWorkPolicy existing_work_policy =
                 ExtractExistingWorkPolicyFromMap(map);
             int32_t initial_delay_seconds = GetOrNullFromEncodableMap<int32_t>(
@@ -182,16 +190,46 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
             std::optional<BackoffPolicyTaskConfig> backoff_policy_config =
                 ExtractBackoffPolicyConfigFromMap(
                     map, isPeriodic ? kMinBackOffPeriodic : kMinBackOffOneOff);
-            std::optional<std::string> payload =
-                GetOrNullFromEncodableMap<std::string>(&map, kPayloadKey);
+            std::string payload =
+                GetOrNullFromEncodableMap<std::string>(&map, kPayloadKey)
+                    .value_or("");
 
-            const auto &info = RegisterTaskInfo(
-                is_debug_mode, unique_name, task_name, existing_work_policy,
-                initial_delay_seconds, constraints_config,
-                backoff_policy_config, out_of_quota_policy, frequency_seconds,
-                tag, payload);
+            // send bundle constructed with task info to service app via custom
+            // event
+            bundle *bund = nullptr;
+            bund = bundle_create();
 
-            job_scheduler.RegisterJob(info, isPeriodic);
+            bundle_add_str(bund, kMethodNameKey, method_name.c_str());
+
+            bundle_add_byte(bund, kIsInDebugModeKey, &is_debug_mode, 1);
+            bundle_add_str(bund, kUniquenameKey, unique_name.c_str());
+            bundle_add_str(bund, kNameValueKey, task_name.c_str());
+            bundle_add_str(bund, kTagKey, tag.c_str());
+
+            bundle_add_byte(bund, kInitialDelaySecondsKey,
+                            &initial_delay_seconds, 4);
+            bundle_add_byte(bund, kFrequencySecondsKey, &frequency_seconds, 4);
+
+            bundle_add_str(bund, kPayloadKey, payload.c_str());
+
+            // TODO : handle enum values for bundle
+
+            bundle_add_byte(bund, kIsPeriodicKey, &isPeriodic, 1);
+
+            std::string app_id = GetAppId().value();
+            std::string event_id = "event." + app_id + kEventName;
+
+            // TODO : ensure service is ON before publish
+            int err = event_publish_app_event(event_id.c_str(), bund);
+            if (err) {
+                LOG_ERROR("Failed publish event: %s", get_error_message(err));
+                result->Error("Error publish event", "Error occured.");
+                bundle_free(bund);
+                return;
+            }
+
+            bundle_free(bund);
+            //
 
             result->Success();
         } else if (method_name == kCancelTaskByUniqueName) {
@@ -287,6 +325,72 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
 
     static void StopJobCallback(job_info_h job_info, void *user_data) {
         // Currently do nothing.
+    }
+
+    static std::optional<std::string> GetAppId() {
+        char *app_id;
+        int err = app_manager_get_app_id(getpid(), &app_id);
+        if (err == 0) {
+            return std::string(app_id);
+        }
+
+        return std::nullopt;
+    }
+
+    static void TaskInfoCallback(const char *event_name, bundle *event_data,
+                                 void *user_data) {
+        LOG_DEBUG("event_name is [%s]", event_name);
+
+        size_t size;
+
+        char *method_name = nullptr;
+
+        // TODO : handle for enums
+        bool *is_debug_mode = nullptr;
+        char *unique_name = nullptr;
+        char *task_name = nullptr;
+        char *tag = nullptr;
+
+        int32_t *initial_delay_seconds = nullptr;
+        int32_t *frequency_seconds = nullptr;
+        char *payload = nullptr;
+        bool *is_periodic = nullptr;
+
+        bundle *bund = bundle_create();
+        bundle_get_str(bund, kMethodNameKey, &method_name);
+
+        std::string method_name_str(method_name);
+        auto &job_scheduler = JobScheduler::instance();
+
+        if (method_name_str == kRegisterOneOffTask ||
+            method_name_str == kRegisterPeriodicTask) {
+            bundle_get_byte(bund, kIsInDebugModeKey, (void **)&is_debug_mode,
+                            &size);
+            bundle_get_str(bund, kUniquenameKey, &unique_name);
+            bundle_get_str(bund, kNameValueKey, &task_name);
+
+            bundle_get_byte(bund, kInitialDelaySecondsKey,
+                            (void **)&initial_delay_seconds, &size);
+            bundle_get_byte(bund, kFrequencySecondsKey,
+                            (void **)&frequency_seconds, &size);
+            bundle_get_str(bund, kPayloadKey, &payload);
+            bundle_get_byte(bund, kIsPeriodicKey, (void **)&is_periodic, &size);
+
+            const auto &info = RegisterTaskInfo(
+                is_debug_mode, unique_name, task_name, existing_work_policy,
+                initial_delay_seconds, constraints_config,
+                backoff_policy_config, out_of_quota_policy, frequency_seconds,
+                tag, payload);
+
+            
+            job_scheduler.RegisterJob(info, *is_periodic);
+
+            bundle_free(bund);
+        } else if (method_name_str == kCancelTaskByUniqueName) {
+            // TODO : Implement
+        } else if (method_name_str == kCancelAllTasks) {
+            job_scheduler_cancel_all();
+        }
     }
 };
 
