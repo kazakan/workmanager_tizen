@@ -6,7 +6,6 @@
 #include <memory>
 
 #include "log.h"
-#include "options.h"
 #include "tasks.h"
 
 class JobScheduler {

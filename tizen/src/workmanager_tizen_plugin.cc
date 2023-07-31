@@ -394,7 +394,6 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
 
         if (method_name_str == kRegisterOneOffTask ||
             method_name_str == kRegisterPeriodicTask) {
-            // TODO : handle for enums
             bool *is_debug_mode = nullptr;
             char *unique_name = nullptr;
             char *task_name = nullptr;
@@ -432,13 +431,11 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
             bundle_get_byte(bund, kOutofQuotaPolicyKey,
                             (void **)&out_of_quota_policy, &size);
 
-            
-                        job_scheduler.RegisterJob(
-                            is_debug_mode, unique_name, task_name,
-               *existing_work_policy, *initial_delay_seconds,
-               *constraints, *backoff_policy, *out_of_quota_policy,
-               *is_periodic, *frequency_seconds, tag, payload);
-                            
+            job_scheduler.RegisterJob(
+                is_debug_mode, unique_name, task_name, *existing_work_policy,
+                *initial_delay_seconds, *constraints, *backoff_policy,
+                *out_of_quota_policy, *is_periodic, *frequency_seconds, tag,
+                payload);
 
         } else if (method_name_str == kCancelTaskByUniqueName) {
             char *unique_name;
