@@ -344,6 +344,10 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
 
     static void RunBackgroundCallback(const std::string job_id,
                                       const std::string payload) {
+        if (!background_channel_.has_value()) {
+            return;
+        }
+
         flutter::EncodableMap arg = {
             {flutter::EncodableValue(kBgChannelInputDataKey),
              flutter::EncodableValue(payload)},
@@ -356,10 +360,6 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
     }
 
     static void StartJobCallback(job_info_h job_info, void *user_data) {
-        if (!background_channel_.has_value()) {
-            return;
-        }
-
         char *job_id = nullptr;
         job_info_get_job_id(job_info, &job_id);
 
