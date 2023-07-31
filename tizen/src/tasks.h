@@ -45,11 +45,11 @@ struct RegisterTaskInfo {
     std::string task_name;
     std::string tag;
     int32_t initial_delay_seconds;
-    std::optional<Constraints> constraints_config;
+    Constraints constraints_config;
     std::string payload;
     ExistingWorkPolicy existing_work_policy;
-    std::optional<BackoffPolicyTaskConfig> backoff_policy_config;
-    std::optional<OutOfQuotaPolicy> out_of_quota_policy;
+    BackoffPolicyTaskConfig backoff_policy_config;
+    OutOfQuotaPolicy out_of_quota_policy;
     int32_t frequency_in_seconds;
     bool is_periodic;
 };
