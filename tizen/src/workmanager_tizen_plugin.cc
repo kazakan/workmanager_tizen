@@ -223,16 +223,25 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
         }
 
         if (call.method_name() == kCancelAllTasks) {
-            bundle *bund = nullptr;
-            bund = bundle_create();
+            bundle *bund = bundle_create();
 
             bundle_add_str(bund, kMethodNameKey, method_name.c_str());
             int err = event_publish_app_event(event_id.c_str(), bund);
-
             bundle_free(bund);
+
+            if (err) {
+                LOG_ERROR("Failed publich app event: %s",
+                          get_error_message(err));
+
+                result->Error("Failed", "Failed publish app event");
+                return;
+            }
 
             // for test, remove later
             SendTerminateRequestBgApp(service_app_id.c_str());
+            auto &job_scheduler = JobScheduler::instance();
+            job_scheduler.CancelAll();
+            //
 
             result->Success();
             return;
@@ -350,14 +359,13 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
             bundle_add_str(bund, kCancelTaskByUniqueName, name.value().c_str());
 
             int err = event_publish_app_event(event_id.c_str(), bund);
+            bundle_free(bund);
+
             if (err) {
                 LOG_ERROR("Failed publish event: %s", get_error_message(err));
                 result->Error("Error publish event", "Error occured.");
-                bundle_free(bund);
                 return;
             }
-
-            bundle_free(bund);
 
             result->Success();
 
@@ -365,7 +373,7 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
             auto tag =
                 GetOrNullFromEncodableMap<std::string>(&map, kCancelTaskTagKey);
             if (!tag.has_value()) {
-                result->Error("WRONG ARGS", "No name provided");
+                result->Error("WRONG ARGS", "No tag provided");
                 return;
             }
 
