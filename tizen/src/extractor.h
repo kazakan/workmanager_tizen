@@ -64,14 +64,11 @@ BackoffPolicy StringToBackoffPolicy(const std::string &str) {
     return BackoffPolicy::kLinear;
 }
 
-std::optional<OutOfQuotaPolicy> StringToOutOfQuotaPolicy(
-    const std::string &str) {
+OutOfQuotaPolicy StringToOutOfQuotaPolicy(const std::string &str) {
     if (str == kRunAsNonExpectedWorkRequest) {
         return OutOfQuotaPolicy::kRunAsNonExpeditedWorkRequest;
-    } else if (str == kDropWorkRequest) {
-        return OutOfQuotaPolicy::kDropWorkRequest;
     }
-    return std::nullopt;
+    return OutOfQuotaPolicy::kDropWorkRequest;
 }
 
 NetworkType StringToNetworkType(const std::string &str) {
@@ -96,18 +93,18 @@ ExistingWorkPolicy ExtractExistingWorkPolicyFromMap(
     return StringToExistingWorkPolicy(value);
 }
 
-std::optional<BackoffPolicyTaskConfig> ExtractBackoffPolicyConfigFromMap(
+BackoffPolicyTaskConfig ExtractBackoffPolicyConfigFromMap(
     const flutter::EncodableMap &map, int32_t minimum_backoff_delay) {
     std::string value;
     if (!GetValueFromEncodableMap(&map, kBackOffPolicyTypeKey, value)) {
-        return std::nullopt;
+        return {BackoffPolicy::kLinear, 15 * 60, minimum_backoff_delay, 0};
     }
 
     BackoffPolicy backoff_policy = StringToBackoffPolicy(value);
 
     int32_t requested_backoff_delay =
         GetOrNullFromEncodableMap<int32_t>(&map, kBackOffPolicyDelayMillisKey)
-            .value_or(15 * 6 * 1000) /
+            .value_or(15 * 60 * 1000) /
         1000;
 
     BackoffPolicyTaskConfig ret;
@@ -118,16 +115,12 @@ std::optional<BackoffPolicyTaskConfig> ExtractBackoffPolicyConfigFromMap(
     return ret;
 }
 
-std::optional<OutOfQuotaPolicy> ExtractOutOfQuotaPolicyFromMap(
+OutOfQuotaPolicy ExtractOutOfQuotaPolicyFromMap(
     const flutter::EncodableMap &map) {
-    std::optional<std::string> value =
-        GetOrNullFromEncodableMap<std::string>(&map, kOutofQuotaPolicyKey);
-
-    if (!value.has_value()) {
-        return std::nullopt;
-    }
-
-    return StringToOutOfQuotaPolicy(value.value());
+    std::string value =
+        GetOrNullFromEncodableMap<std::string>(&map, kOutofQuotaPolicyKey)
+            .value_or("");
+    return StringToOutOfQuotaPolicy(value);
 }
 
 NetworkType ExtractNetworkTypeFromMap(const flutter::EncodableMap &args) {

@@ -54,9 +54,9 @@ class JobScheduler {
                      const std::string& task_name,
                      const ExistingWorkPolicy existing_work_policy,
                      const int32_t initial_delay_seconds,
-                     const std::optional<Constraints>& constraints_config,
-                     const std::optional<BackoffPolicy>& backoff_policy_config,
-                     const std::optional<OutOfQuotaPolicy>& out_of_quota_policy,
+                     const Constraints& constraints_config,
+                     const BackoffPolicyTaskConfig& backoff_policy_config,
+                     const OutOfQuotaPolicy& out_of_quota_policy,
                      const bool isPeriodic = false,
                      const int32_t frequency_seconds = 0,
                      const std::string& tag = "",
@@ -68,12 +68,10 @@ class JobScheduler {
             return;
         }
 
-        if (constraints_config.has_value()) {
-            err = SetJobConstraints(job_info, constraints_config.value());
-            if (err) {
-                job_info_destroy(job_info);
-                return;
-            }
+        err = SetJobConstraints(job_info, constraints_config);
+        if (err) {
+            job_info_destroy(job_info);
+            return;
         }
 
         if (isPeriodic) {
