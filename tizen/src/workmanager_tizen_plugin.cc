@@ -83,19 +83,86 @@ const int32_t kMinBackOffOneOff = 10 * 1000;
 
 const char *kEventName = "pass_taskinfo_event";
 
+void SendTerminateRequestBgApp(const char *service_id) {
+    app_context_h context;
+    int ret = app_manager_get_app_context(service_id, &context);
+    if (ret) {
+        LOG_ERROR("%s", get_error_message(ret));
+    }
+
+    ret = app_manager_request_terminate_bg_app(context);
+    if (ret) {
+        LOG_ERROR("%s", get_error_message(ret));
+    }
+
+    ret = app_context_destroy(context);
+    if (ret) {
+        LOG_ERROR("%s", get_error_message(ret));
+    }
+}
+
+bool CheckAppIsRunning(const char *app_id) {
+    app_context_h context;
+    int err = app_manager_get_app_context(app_id, &context);
+    if (err == APP_MANAGER_ERROR_NO_SUCH_APP) return false;
+    if (err) {
+        LOG_ERROR("%s", get_error_message(err));
+        return false;
+    }
+
+    app_state_e state;
+    app_context_get_app_state(context, &state);
+
+    switch (state) {
+        case APP_STATE_FOREGROUND:
+        case APP_STATE_BACKGROUND:
+        case APP_STATE_SERVICE:
+            return true;
+    }
+    return false;
+}
+
+void SendLaunchRequest(const char *app_id) {
+    app_control_h control;
+    int ret = app_control_create(&control);
+    if (ret) {
+        LOG_ERROR("%s", get_error_message(ret));
+    }
+
+    ret = app_control_set_app_id(control, app_id);
+    if (ret) {
+        LOG_ERROR("%s", get_error_message(ret));
+    }
+
+    ret = app_control_send_launch_request(control, NULL, NULL);
+    if (ret) {
+        LOG_ERROR("%s", get_error_message(ret));
+    }
+
+    ret = app_control_destroy(control);
+    if (ret) {
+        LOG_ERROR("%s", get_error_message(ret));
+    }
+}
+
+bool CheckIsServiceApp() {
+    char *app_id;
+    int err = app_manager_get_app_id(getpid(), &app_id);
+    if (err) {
+        LOG_ERROR("Failed to get app id: %s", get_error_message(err));
+        return false;
+    }
+    app_info_h app_info;
+    app_info_app_component_type_e app_type;
+    app_info_create(app_id, &app_info);
+    app_info_get_app_component_type(app_info, &app_type);
+    return app_type == APP_INFO_APP_COMPONENT_TYPE_SERVICE_APP;
+}
+
 class WorkmanagerTizenPlugin : public flutter::Plugin {
    public:
     static void RegisterWithRegistrar(flutter::PluginRegistrar *registrar) {
         auto plugin = std::make_unique<WorkmanagerTizenPlugin>();
-
-        auto foreground_channel = std::make_unique<FlMethodChannel>(
-            registrar->messenger(), kForegroundChannelName,
-            &flutter::StandardMethodCodec::GetInstance());
-
-        foreground_channel->SetMethodCallHandler(
-            [plugin_pointer = plugin.get()](const auto &call, auto result) {
-                plugin_pointer->HandleWorkmanagerCall(call, std::move(result));
-            });
 
         is_service_app_ = CheckIsServiceApp();
 
@@ -109,18 +176,23 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
                     plugin_pointer->HandleBackground(call, std::move(result));
                 });
 
-            auto &scheduler = JobScheduler::instance();
-            job_service_callback_s callback = {StartJobCallback,
-                                               StopJobCallback};
-            auto job_names = scheduler.GetAllJobs();
-
             event_handler_h handler;
             std::string service_app_id = GetAppId().value();
             std::string event_id =
                 "event." + service_app_id.substr(0, service_app_id.size() - 8) +
                 "." + kEventName;
-            int err = event_add_event_handler(
-                event_id.c_str(), TaskInfoCallback, nullptr, &handler);
+            event_add_event_handler(event_id.c_str(), TaskInfoCallback, nullptr,
+                                    &handler);
+        } else {
+            auto foreground_channel = std::make_unique<FlMethodChannel>(
+                registrar->messenger(), kForegroundChannelName,
+                &flutter::StandardMethodCodec::GetInstance());
+
+            foreground_channel->SetMethodCallHandler(
+                [plugin_pointer = plugin.get()](const auto &call, auto result) {
+                    plugin_pointer->HandleWorkmanagerCall(call,
+                                                          std::move(result));
+                });
         }
 
         registrar->AddPlugin(std::move(plugin));
@@ -138,12 +210,29 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
                                std::unique_ptr<FlMethodResult> result) {
         const auto method_name = call.method_name();
         const auto &arguments = *call.arguments();
-        auto &job_scheduler = JobScheduler::instance();
 
-        SendLaunchRequest((GetAppId().value() + "_service").c_str());
+        std::string app_id = GetAppId().value();
+        std::string event_id = "event." + app_id + "." + kEventName;
+
+        const std::string service_app_id = GetAppId().value() + "_service";
+
+        if (!CheckAppIsRunning(service_app_id.c_str())) {
+            // TODO : make sync
+
+            SendLaunchRequest(service_app_id.c_str());
+        }
 
         if (call.method_name() == kCancelAllTasks) {
-            job_scheduler.CancelAll();
+            bundle *bund = nullptr;
+            bund = bundle_create();
+
+            bundle_add_str(bund, kMethodNameKey, method_name.c_str());
+            int err = event_publish_app_event(event_id.c_str(), bund);
+
+            bundle_free(bund);
+
+            // for test, remove later
+            SendTerminateRequestBgApp(service_app_id.c_str());
 
             result->Success();
             return;
@@ -156,8 +245,6 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
         }
 
         flutter::EncodableMap map = std::get<flutter::EncodableMap>(arguments);
-        std::string app_id = GetAppId().value();
-        std::string event_id = "event." + app_id + "." + kEventName;
 
         if (method_name == kInitialize) {
             bool isDebugMode =
@@ -213,7 +300,8 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
 
             bundle_add_str(bund, kMethodNameKey, method_name.c_str());
 
-            bundle_add_byte(bund, kIsInDebugModeKey, &is_debug_mode, 1);
+            bundle_add_byte(bund, kIsInDebugModeKey, &is_debug_mode,
+                            sizeof(bool));
             bundle_add_str(bund, kUniquenameKey, unique_name.c_str());
             bundle_add_str(bund, kNameValueKey, task_name.c_str());
             bundle_add_str(bund, kTagKey, tag.c_str());
@@ -221,8 +309,9 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
                             sizeof(ExistingWorkPolicy));
 
             bundle_add_byte(bund, kInitialDelaySecondsKey,
-                            &initial_delay_seconds, 4);
-            bundle_add_byte(bund, kFrequencySecondsKey, &frequency_seconds, 4);
+                            &initial_delay_seconds, sizeof(int32_t));
+            bundle_add_byte(bund, kFrequencySecondsKey, &frequency_seconds,
+                            sizeof(int32_t));
 
             bundle_add_str(bund, kPayloadKey, payload.c_str());
 
@@ -233,9 +322,10 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
                             sizeof(BackoffPolicyTaskConfig));
             bundle_add_byte(bund, kOutofQuotaPolicyKey, &out_of_quota_policy,
                             sizeof(OutOfQuotaPolicy));
+            bundle_add_byte(bund, kIsPeriodicKey, &is_periodic, sizeof(bool));
 
-            LOG_DEBUG("event_id: %s", event_id.c_str());
             int err = event_publish_app_event(event_id.c_str(), bund);
+
             if (err) {
                 LOG_ERROR("Failed publish event: %s", get_error_message(err));
                 result->Error("Error publish event", "Error occured.");
@@ -304,55 +394,26 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
     void HandleBackground(const FlMethodCall &call,
                           std::unique_ptr<FlMethodResult> result) {
         if (call.method_name() == kBackgroundChannelInitialized) {
-            const auto &args = *call.arguments();
-            if (!std::holds_alternative<flutter::EncodableMap>(args)) {
-                result->Error("WRONG ARGS",
-                              "No proper argument provided for background");
-                return;
-            }
-            flutter::EncodableMap map = std::get<flutter::EncodableMap>(args);
-            auto dart_task =
-                map[flutter::EncodableValue(kBgChannelDartTaskKey)];
-            auto input_data =
-                map[flutter::EncodableValue(kBgChannelInputDataKey)];
-
-            flutter::EncodableMap arg = {
-                {flutter::EncodableValue(std::string(kBgChannelDartTaskKey)),
-                 dart_task},
-                {flutter::EncodableValue(std::string(kBgChannelInputDataKey)),
-                 input_data}};
-
-            background_channel_.value()->InvokeMethod(
-                kOnResultSendMethod,
-                std::make_unique<flutter::EncodableValue>(arg));
+            // check initialized
         }
+
+        result->Success();
     }
 
-    static bool CheckIsServiceApp() {
-        char *app_id;
-        int err = app_manager_get_app_id(getpid(), &app_id);
-        if (err) {
-            LOG_ERROR("Failed to get app id: %s", get_error_message(err));
-            return false;
-        }
-        app_info_h app_info;
-        app_info_app_component_type_e app_type;
-        app_info_create(app_id, &app_info);
-        app_info_get_app_component_type(app_info, &app_type);
-        return app_type == APP_INFO_APP_COMPONENT_TYPE_SERVICE_APP;
-    }
-
-    static void RunBackgroundCallback(const std::string job_id,
-                                      const std::string payload) {
+    static void RunBackgroundCallback(const std::string &job_id,
+                                      const std::string &payload) {
         if (!background_channel_.has_value()) {
             return;
         }
-
         flutter::EncodableMap arg = {
-            {flutter::EncodableValue(kBgChannelInputDataKey),
-             flutter::EncodableValue(payload)},
             {flutter::EncodableValue(kBgChannelDartTaskKey),
-             flutter::EncodableValue(job_id)}};
+             flutter::EncodableValue(job_id)},
+        };
+
+        if (payload.size() > 0) {
+            arg[flutter::EncodableValue(kBgChannelInputDataKey)] =
+                flutter::EncodableValue(payload);
+        }
 
         background_channel_.value()->InvokeMethod(
             kOnResultSendMethod,
@@ -383,14 +444,13 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
 
     static void TaskInfoCallback(const char *event_name, bundle *event_data,
                                  void *user_data) {
-        LOG_DEBUG("event_name is [%s]", event_name);
-
         size_t size;
         char *method_name = nullptr;
 
         bundle_get_str(event_data, kMethodNameKey, &method_name);
 
         std::string method_name_str(method_name);
+
         auto &job_scheduler = JobScheduler::instance();
 
         if (method_name_str == kRegisterOneOffTask ||
@@ -411,10 +471,11 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
             BackoffPolicyTaskConfig *backoff_policy = nullptr;
             OutOfQuotaPolicy *out_of_quota_policy = nullptr;
 
-            bundle_get_byte(event_data, kIsInDebugModeKey, (void **)&is_debug_mode,
-                            &size);
+            bundle_get_byte(event_data, kIsInDebugModeKey,
+                            (void **)&is_debug_mode, &size);
             bundle_get_str(event_data, kUniquenameKey, &unique_name);
             bundle_get_str(event_data, kNameValueKey, &task_name);
+            bundle_get_str(event_data, kTagKey, &tag);
             bundle_get_byte(event_data, kExistingWorkpolicykey,
                             (void **)&existing_work_policy, &size);
 
@@ -423,24 +484,31 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
             bundle_get_byte(event_data, kFrequencySecondsKey,
                             (void **)&frequency_seconds, &size);
             bundle_get_str(event_data, kPayloadKey, &payload);
-            bundle_get_byte(event_data, kIsPeriodicKey, (void **)&is_periodic, &size);
-
-            bundle_get_byte(event_data, kConstraintsBundleKey, (void **)&constraints,
+            bundle_get_byte(event_data, kIsPeriodicKey, (void **)&is_periodic,
                             &size);
+
+            bundle_get_byte(event_data, kConstraintsBundleKey,
+                            (void **)&constraints, &size);
             bundle_get_byte(event_data, kBackOffPolicyBundleKey,
                             (void **)&backoff_policy, &size);
             bundle_get_byte(event_data, kOutofQuotaPolicyKey,
                             (void **)&out_of_quota_policy, &size);
-            bundle_get_byte(event_data, kIsPeriodicKey, (void **)&is_periodic, &size);
+            bundle_get_byte(event_data, kIsPeriodicKey, (void **)&is_periodic,
+                            &size);
 
             if (*is_periodic) {
                 job_scheduler.RegisterJob(
-                    is_debug_mode, unique_name, task_name,
+                    *is_debug_mode, unique_name, task_name,
                     *existing_work_policy, *initial_delay_seconds, *constraints,
                     *backoff_policy, *out_of_quota_policy, *is_periodic,
                     *frequency_seconds, tag, payload);
+
+                job_service_callback_s callback = {StartJobCallback,
+                                                   StopJobCallback};
+                job_scheduler.SetCallback(unique_name, callback, payload);
+
             } else {
-                RunBackgroundCallback(unique_name,payload);
+                RunBackgroundCallback(unique_name, payload);
             }
 
         } else if (method_name_str == kCancelTaskByUniqueName) {
@@ -451,31 +519,6 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
 
         } else if (method_name_str == kCancelAllTasks) {
             job_scheduler.CancelAll();
-        }
-
-        bundle_free(event_data);
-    }
-
-    void SendLaunchRequest(const char *app_id) {
-        app_control_h control;
-        int ret = app_control_create(&control);
-        if (ret) {
-            LOG_ERROR("%s", get_error_message(ret));
-        }
-
-        ret = app_control_set_app_id(control, app_id);
-        if (ret) {
-            LOG_ERROR("%s", get_error_message(ret));
-        }
-
-        ret = app_control_send_launch_request(control, NULL, NULL);
-        if (ret) {
-            LOG_ERROR("%s", get_error_message(ret));
-        }
-
-        ret = app_control_destroy(control);
-        if (ret) {
-            LOG_ERROR("%s", get_error_message(ret));
         }
     }
 };

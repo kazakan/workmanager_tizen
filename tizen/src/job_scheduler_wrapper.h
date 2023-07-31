@@ -176,7 +176,12 @@ class JobScheduler {
     }
 
    private:
-    JobScheduler() { job_scheduler_init(); };
+    JobScheduler() {
+        int err = job_scheduler_init();
+        if (err) {
+            LOG_ERROR("Error init job_scheduler: %s", get_error_message(err));
+        }
+    };
     ~JobScheduler() { job_scheduler_finish(); };
 };
 
