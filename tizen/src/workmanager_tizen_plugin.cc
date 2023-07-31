@@ -219,6 +219,13 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
 
             bundle_add_str(bund, kPayloadKey, payload.c_str());
 
+
+            bundle_add_byte(bund,kNetworkTypekey,&constraints_config.network_type,sizeof(NetworkType));
+            bundle_add_byte(bund,kBatteryNotLowKey,&constraints_config.battery_not_low,1);
+            bundle_add_byte(bund,kChargingKey,&constraints_config.charging,1);
+            bundle_add_byte(bund,kDeviceidlekey,&constraints_config.device_idle,1);
+            bundle_add_byte(bund,kStorageNotLowKey,&constraints_config.storage_not_low,1);
+
             // TODO : handle enum values for bundle
 
             bundle_add_byte(bund, kIsPeriodicKey, &isPeriodic, 1);
@@ -394,6 +401,12 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
             char *payload = nullptr;
             bool *is_periodic = nullptr;
 
+            NetworkType * network_type = nullptr;
+            bool* battery_not_low = nullptr;
+            bool* charging = nullptr;
+            bool* device_idle = nullptr;
+            bool* storage_not_low = nullptr;
+
             bundle_get_byte(bund, kIsInDebugModeKey, (void **)&is_debug_mode,
                             &size);
             bundle_get_str(bund, kUniquenameKey, &unique_name);
@@ -408,6 +421,13 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
             bundle_get_str(bund, kPayloadKey, &payload);
             bundle_get_byte(bund, kIsPeriodicKey, (void **)&is_periodic, &size);
 
+            bundle_get_byte(bund,kNetworkTypekey,(void**)network_type,&size);
+
+            bundle_get_byte(bund,kBatteryNotLowKey,(void**)network_type,&size);
+            bundle_get_byte(bund,kChargingKey,(void**)battery_not_low,&size);
+            bundle_get_byte(bund,kDeviceidlekey,(void**)device_idle,&size);
+            bundle_get_byte(bund,kStorageNotLowKey,(void**)storage_not_low,&size);
+            
             /*
                         job_scheduler.RegisterJob(
                             is_debug_mode, unique_name, task_name,
