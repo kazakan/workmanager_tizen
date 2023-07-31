@@ -388,8 +388,7 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
         size_t size;
         char *method_name = nullptr;
 
-        bundle *bund = bundle_create();
-        bundle_get_str(bund, kMethodNameKey, &method_name);
+        bundle_get_str(event_data, kMethodNameKey, &method_name);
 
         std::string method_name_str(method_name);
         auto &job_scheduler = JobScheduler::instance();
@@ -412,27 +411,27 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
             BackoffPolicyTaskConfig *backoff_policy = nullptr;
             OutOfQuotaPolicy *out_of_quota_policy = nullptr;
 
-            bundle_get_byte(bund, kIsInDebugModeKey, (void **)&is_debug_mode,
+            bundle_get_byte(event_data, kIsInDebugModeKey, (void **)&is_debug_mode,
                             &size);
-            bundle_get_str(bund, kUniquenameKey, &unique_name);
-            bundle_get_str(bund, kNameValueKey, &task_name);
-            bundle_get_byte(bund, kExistingWorkpolicykey,
+            bundle_get_str(event_data, kUniquenameKey, &unique_name);
+            bundle_get_str(event_data, kNameValueKey, &task_name);
+            bundle_get_byte(event_data, kExistingWorkpolicykey,
                             (void **)&existing_work_policy, &size);
 
-            bundle_get_byte(bund, kInitialDelaySecondsKey,
+            bundle_get_byte(event_data, kInitialDelaySecondsKey,
                             (void **)&initial_delay_seconds, &size);
-            bundle_get_byte(bund, kFrequencySecondsKey,
+            bundle_get_byte(event_data, kFrequencySecondsKey,
                             (void **)&frequency_seconds, &size);
-            bundle_get_str(bund, kPayloadKey, &payload);
-            bundle_get_byte(bund, kIsPeriodicKey, (void **)&is_periodic, &size);
+            bundle_get_str(event_data, kPayloadKey, &payload);
+            bundle_get_byte(event_data, kIsPeriodicKey, (void **)&is_periodic, &size);
 
-            bundle_get_byte(bund, kConstraintsBundleKey, (void **)&constraints,
+            bundle_get_byte(event_data, kConstraintsBundleKey, (void **)&constraints,
                             &size);
-            bundle_get_byte(bund, kBackOffPolicyBundleKey,
+            bundle_get_byte(event_data, kBackOffPolicyBundleKey,
                             (void **)&backoff_policy, &size);
-            bundle_get_byte(bund, kOutofQuotaPolicyKey,
+            bundle_get_byte(event_data, kOutofQuotaPolicyKey,
                             (void **)&out_of_quota_policy, &size);
-            bundle_get_byte(bund, kIsPeriodicKey, (void **)&is_periodic, &size);
+            bundle_get_byte(event_data, kIsPeriodicKey, (void **)&is_periodic, &size);
 
             if (*is_periodic) {
                 job_scheduler.RegisterJob(
@@ -446,7 +445,7 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
 
         } else if (method_name_str == kCancelTaskByUniqueName) {
             char *unique_name;
-            bundle_get_str(bund, kUniquenameKey, &unique_name);
+            bundle_get_str(event_data, kUniquenameKey, &unique_name);
 
             job_scheduler.CancelByUniqueName(unique_name);
 
@@ -454,7 +453,7 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
             job_scheduler.CancelAll();
         }
 
-        bundle_free(bund);
+        bundle_free(event_data);
     }
 
     void SendLaunchRequest(const char *app_id) {
