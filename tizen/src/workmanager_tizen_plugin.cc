@@ -208,8 +208,6 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
                 backoff_policy_config, out_of_quota_policy, frequency_seconds,
                 tag, payload, is_periodic);
 
-            // send bundle constructed with task info to service app via custom
-            // event
             bundle *bund = nullptr;
             bund = bundle_create();
 
@@ -344,6 +342,19 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
         return app_type == APP_INFO_APP_COMPONENT_TYPE_SERVICE_APP;
     }
 
+    static void RunBackgroundCallback(const std::string job_id,
+                                      const std::string payload) {
+        flutter::EncodableMap arg = {
+            {flutter::EncodableValue(kBgChannelInputDataKey),
+             flutter::EncodableValue(payload)},
+            {flutter::EncodableValue(kBgChannelDartTaskKey),
+             flutter::EncodableValue(job_id)}};
+
+        background_channel_.value()->InvokeMethod(
+            kOnResultSendMethod,
+            std::make_unique<flutter::EncodableValue>(arg));
+    }
+
     static void StartJobCallback(job_info_h job_info, void *user_data) {
         if (!background_channel_.has_value()) {
             return;
@@ -353,16 +364,7 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
         job_info_get_job_id(job_info, &job_id);
 
         std::string payload(static_cast<char *>(user_data));
-
-        flutter::EncodableMap arg = {
-            {flutter::EncodableValue(kBgChannelInputDataKey),
-             flutter::EncodableValue(payload)},
-            {flutter::EncodableValue(kBgChannelDartTaskKey),
-             flutter::EncodableValue(std::string(job_id))}};
-
-        background_channel_.value()->InvokeMethod(
-            kOnResultSendMethod,
-            std::make_unique<flutter::EncodableValue>(arg));
+        RunBackgroundCallback(std::string(job_id), payload);
     }
 
     static void StopJobCallback(job_info_h job_info, void *user_data) {
@@ -430,12 +432,17 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
                             (void **)&backoff_policy, &size);
             bundle_get_byte(bund, kOutofQuotaPolicyKey,
                             (void **)&out_of_quota_policy, &size);
+            bundle_get_byte(bund, kIsPeriodicKey, (void **)&is_periodic, &size);
 
-            job_scheduler.RegisterJob(
-                is_debug_mode, unique_name, task_name, *existing_work_policy,
-                *initial_delay_seconds, *constraints, *backoff_policy,
-                *out_of_quota_policy, *is_periodic, *frequency_seconds, tag,
-                payload);
+            if (*is_periodic) {
+                job_scheduler.RegisterJob(
+                    is_debug_mode, unique_name, task_name,
+                    *existing_work_policy, *initial_delay_seconds, *constraints,
+                    *backoff_policy, *out_of_quota_policy, *is_periodic,
+                    *frequency_seconds, tag, payload);
+            } else {
+                RunBackgroundCallback(unique_name,payload);
+            }
 
         } else if (method_name_str == kCancelTaskByUniqueName) {
             char *unique_name;
