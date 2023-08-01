@@ -234,13 +234,7 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
                 result->Error("Failed", "Failed publish app event");
                 return;
             }
-
-            // for test, remove later
-            SendTerminateRequestBgApp(service_app_id.c_str());
-            auto &job_scheduler = JobScheduler::instance();
-            job_scheduler.CancelAll();
-            //
-
+            
             result->Success();
             return;
         }
