@@ -304,8 +304,7 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
                 backoff_policy_config, out_of_quota_policy, frequency_seconds,
                 tag, payload, is_periodic);
 
-            bundle *bund = nullptr;
-            bund = bundle_create();
+            bundle *bund = bundle_create();
 
             bundle_add_str(bund, kMethodNameKey, method_name.c_str());
 
@@ -334,15 +333,13 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
             bundle_add_byte(bund, kIsPeriodicKey, &is_periodic, sizeof(bool));
 
             int err = event_publish_app_event(event_id.c_str(), bund);
+            bundle_free(bund);
 
             if (err) {
                 LOG_ERROR("Failed publish event: %s", get_error_message(err));
                 result->Error("Error publish event", "Error occured.");
-                bundle_free(bund);
                 return;
             }
-
-            bundle_free(bund);
 
             result->Success();
         } else if (method_name == kCancelTaskByUniqueName) {
@@ -377,8 +374,7 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
                 return;
             }
 
-            bundle *bund = nullptr;
-            bund = bundle_create();
+            bundle *bund = bundle_create();
             bundle_add_str(bund, kMethodNameKey, method_name.c_str());
             bundle_add_str(bund, kCancelTaskTagKey, tag.value().c_str());
 
