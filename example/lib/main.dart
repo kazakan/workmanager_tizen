@@ -3,22 +3,23 @@ import 'dart:io';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:workmanager/workmanager.dart';
 
 import 'package:tizen_log/tizen_log.dart';
 
-void main() => runApp(MyApp());
+void main() => runApp(const MyApp());
 
 const simpleTaskKey = "be.tramckrijte.workmanagerExample.simpleTask";
 const rescheduledTaskKey = "be.tramckrijte.workmanagerExample.rescheduledTask";
 const failedTaskKey = "be.tramckrijte.workmanagerExample.failedTask";
 const simpleDelayedTask = "be.tramckrijte.workmanagerExample.simpleDelayedTask";
-const simplePeriodicTask =
-    "simplePeriodicTask";
+const simplePeriodicTask = "simplePeriodicTask";
 const simplePeriodic1HourTask =
     "be.tramckrijte.workmanagerExample.simplePeriodic1HourTask";
+const logTag = "WorkmanagerTizenPlugin";
 
 @pragma(
     'vm:entry-point') // Mandatory if the App is obfuscated or using Flutter 3.1+
@@ -26,43 +27,41 @@ void callbackDispatcher() {
   Workmanager().executeTask((task, inputData) async {
     switch (task) {
       case simpleTaskKey:
-        Log.debug("WorkmanagerTizenPlugin",
-            "$simpleTaskKey was executed. inputData = $inputData");
+        Log.debug(
+            logTag, "$simpleTaskKey was executed. inputData = $inputData");
         final prefs = await SharedPreferences.getInstance();
         prefs.setBool("test", true);
-        print("Bool from prefs: ${prefs.getBool("test")}");
+        Log.debug(logTag, "Bool from prefs: ${prefs.getBool("test")}");
         break;
       case rescheduledTaskKey:
         final key = inputData!['key']!;
         final prefs = await SharedPreferences.getInstance();
         if (prefs.containsKey('unique-$key')) {
-          Log.debug("WorkmanagerTizenPlugin",
-              'has been running before, task is successful');
+          Log.debug(logTag, 'has been running before, task is successful');
           return true;
         } else {
           await prefs.setBool('unique-$key', true);
-          Log.debug("WorkmanagerTizenPlugin", 'reschedule task');
+          Log.debug(logTag, 'reschedule task');
           return false;
         }
       case failedTaskKey:
-        Log.debug("WorkmanagerTizenPlugin", 'failed task');
+        Log.debug(logTag, 'failed task');
         return Future.error('failed');
       case simpleDelayedTask:
-        Log.debug("WorkmanagerTizenPlugin", "$simpleDelayedTask was executed");
+        Log.debug(logTag, "$simpleDelayedTask was executed");
         break;
       case simplePeriodicTask:
-        Log.debug("WorkmanagerTizenPlugin", "$simplePeriodicTask was executed");
+        Log.debug(logTag,
+            "$simplePeriodicTask was executed : ${DateFormat('HH:mm').format(DateTime.now())}");
         break;
       case simplePeriodic1HourTask:
-        Log.debug(
-            "WorkmanagerTizenPlugin", "$simplePeriodic1HourTask was executed");
+        Log.debug(logTag, "$simplePeriodic1HourTask was executed");
         break;
       case Workmanager.iOSBackgroundTask:
-        Log.debug(
-            "WorkmanagerTizenPlugin", "The iOS background fetch was triggered");
+        Log.debug(logTag, "The iOS background fetch was triggered");
         Directory? tempDir = await getTemporaryDirectory();
         String? tempPath = tempDir.path;
-        Log.debug("WorkmanagerTizenPlugin",
+        Log.debug(logTag,
             "You can access other plugins in the background, for example Directory.getTemporaryDirectory(): $tempPath");
         break;
     }
@@ -72,8 +71,12 @@ void callbackDispatcher() {
 }
 
 class MyApp extends StatefulWidget {
+  const MyApp({super.key});
+
   @override
-  _MyAppState createState() => _MyAppState();
+  State<MyApp> createState() {
+    return _MyAppState();
+  }
 }
 
 class _MyAppState extends State<MyApp> {
@@ -82,7 +85,7 @@ class _MyAppState extends State<MyApp> {
     return MaterialApp(
       home: Scaffold(
         appBar: AppBar(
-          title: Text("Flutter WorkManager Example"),
+          title: const Text("Flutter WorkManager Example"),
         ),
         body: SingleChildScrollView(
           child: Padding(
@@ -95,7 +98,7 @@ class _MyAppState extends State<MyApp> {
                   style: Theme.of(context).textTheme.headlineSmall,
                 ),
                 ElevatedButton(
-                  child: Text("Start the Flutter background service"),
+                  child: const Text("Start the Flutter background service"),
                   onPressed: () {
                     Workmanager().initialize(
                       callbackDispatcher,
@@ -103,12 +106,12 @@ class _MyAppState extends State<MyApp> {
                     );
                   },
                 ),
-                SizedBox(height: 16),
+                const SizedBox(height: 16),
 
                 //This task runs once.
                 //Most likely this will trigger immediately
                 ElevatedButton(
-                  child: Text("Register OneOff Task"),
+                  child: const Text("Register OneOff Task"),
                   onPressed: () {
                     Workmanager().registerOneOffTask(
                       simpleTaskKey,
@@ -124,7 +127,7 @@ class _MyAppState extends State<MyApp> {
                   },
                 ),
                 ElevatedButton(
-                  child: Text("Register rescheduled Task"),
+                  child: const Text("Register rescheduled Task"),
                   onPressed: () {
                     Workmanager().registerOneOffTask(
                       rescheduledTaskKey,
@@ -136,7 +139,7 @@ class _MyAppState extends State<MyApp> {
                   },
                 ),
                 ElevatedButton(
-                  child: Text("Register failed Task"),
+                  child: const Text("Register failed Task"),
                   onPressed: () {
                     Workmanager().registerOneOffTask(
                       failedTaskKey,
@@ -147,48 +150,48 @@ class _MyAppState extends State<MyApp> {
                 //This task runs once
                 //This wait at least 10 seconds before running
                 ElevatedButton(
-                    child: Text("Register Delayed OneOff Task"),
+                    child: const Text("Register Delayed OneOff Task"),
                     onPressed: () {
                       Workmanager().registerOneOffTask(
                         simpleDelayedTask,
                         simpleDelayedTask,
-                        initialDelay: Duration(seconds: 10),
+                        initialDelay: const Duration(seconds: 10),
                       );
                     }),
-                SizedBox(height: 8),
+                const SizedBox(height: 8),
                 //This task runs periodically
                 //It will wait at least 10 seconds before its first launch
                 //Since we have not provided a frequency it will be the default 15 minutes
                 ElevatedButton(
-                    child: Text("Register Periodic Task"),
+                    child: const Text("Register Periodic Task"),
                     onPressed: () {
                       Workmanager().registerPeriodicTask(
                         simplePeriodicTask,
                         simplePeriodicTask,
-                        initialDelay: Duration(seconds: 10),
+                        initialDelay: const Duration(seconds: 10),
                       );
                     }),
                 //This task runs periodically
                 //It will run about every hour
                 ElevatedButton(
-                    child: Text("Register 1 hour Periodic Task"),
+                    child: const Text("Register 1 hour Periodic Task"),
                     onPressed: () {
                       Workmanager().registerPeriodicTask(
                         simplePeriodic1HourTask,
                         simplePeriodic1HourTask,
-                        frequency: Duration(hours: 1),
+                        frequency: const Duration(hours: 1),
                       );
                     }),
-                SizedBox(height: 16),
+                const SizedBox(height: 16),
                 Text(
                   "Task cancellation",
                   style: Theme.of(context).textTheme.headlineSmall,
                 ),
                 ElevatedButton(
-                  child: Text("Cancel All"),
+                  child: const Text("Cancel All"),
                   onPressed: () async {
                     await Workmanager().cancelAll();
-                    print('Cancel all tasks completed');
+                    Log.debug(logTag, 'Cancel all tasks completed');
                   },
                 ),
               ],
