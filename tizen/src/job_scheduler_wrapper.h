@@ -1,6 +1,7 @@
 #ifndef FLUTTER_PLUGIN_WORKMANAGER_JOB_SCHEDULER_WRAPPER_H_
 #define FLUTTER_PLUGIN_WORKMANAGER_JOB_SCHEDULER_WRAPPER_H_
 
+#include <app_preference.h>
 #include <job_scheduler.h>
 
 #include <memory>
@@ -117,6 +118,8 @@ class JobScheduler {
                         if (err) {
                             LOG_ERROR("Failed to schedule job: %s",
                                       get_error_message(err));
+                        } else {
+                            SavePayload(unique_name, payload);
                         }
                         break;
                     default:
@@ -126,7 +129,10 @@ class JobScheduler {
             } else {
                 LOG_ERROR("Failed to schedule job: %s", get_error_message(err));
             }
+        } else {
+            SavePayload(unique_name, payload);
         }
+
         job_info_destroy(job_info);
     }
 
@@ -139,17 +145,27 @@ class JobScheduler {
         if (err) {
             LOG_ERROR("Failed to cancel job with name %s: %s", name.c_str(),
                       get_error_message(err));
+            return;
+        }
+        preference_remove(GetPayloadKey(name).c_str());
+    }
+
+    void CancelAll() {
+        auto job_names = GetAllJobs();
+
+        job_scheduler_cancel_all();
+
+        for (const auto name : job_names) {
+            preference_remove(GetPayloadKey(name).c_str());
         }
     }
 
-    void CancelAll() { job_scheduler_cancel_all(); }
-
-    job_service_h SetCallback(const std::string job_name,
+    job_service_h SetCallback(const char* job_name,
                               job_service_callback_s& callback,
                               void* user_data) {
         job_service_h service = nullptr;
-        int err = job_scheduler_service_add(job_name.c_str(), &callback,
-                                            user_data, &service);
+        int err =
+            job_scheduler_service_add(job_name, &callback, user_data, &service);
         if (err) {
             LOG_ERROR("Failed to add service to job: %s",
                       get_error_message(err));
@@ -176,13 +192,17 @@ class JobScheduler {
     }
 
    private:
-    JobScheduler() {
-        int err = job_scheduler_init();
-        if (err) {
-            LOG_ERROR("Error init job_scheduler: %s", get_error_message(err));
-        }
-    };
-    ~JobScheduler() { job_scheduler_finish(); };
+    JobScheduler() { job_scheduler_init(); };
+    ~JobScheduler(){};
+
+    void SavePayload(const std::string& job_name, const std::string& payload) {
+        const std::string payload_key = GetPayloadKey(job_name).c_str();
+        preference_set_string(payload_key.c_str(), payload.c_str());
+    }
+
+    const std::string GetPayloadKey(const std::string& job_name) {
+        return "WmPayload_" + job_name;
+    }
 };
 
 #endif  // FLUTTER_PLUGIN_WORKMANAGER_JOB_SCHEDULER_WRAPPER_H_

@@ -407,8 +407,10 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
     static void RunBackgroundCallback(const std::string &job_id,
                                       const std::string &payload) {
         if (!background_channel_.has_value()) {
+            LOG_ERROR("Background channel is not initialized.");
             return;
         }
+
         flutter::EncodableMap arg = {
             {flutter::EncodableValue(kBgChannelDartTaskKey),
              flutter::EncodableValue(job_id)},
@@ -428,8 +430,13 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
         char *job_id = nullptr;
         job_info_get_job_id(job_info, &job_id);
 
-        std::string payload(static_cast<char *>(user_data));
-        RunBackgroundCallback(std::string(job_id), payload);
+        std::string job_id_str(job_id);
+        std::string preference_key("WmPayload_" + job_id_str);
+
+        char *payload;
+        preference_get_string(preference_key.c_str(), &payload);
+
+        RunBackgroundCallback(job_id_str, payload);
     }
 
     static void StopJobCallback(job_info_h job_info, void *user_data) {
@@ -501,15 +508,30 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
                             &size);
 
             if (*is_periodic) {
-                job_scheduler.RegisterJob(
-                    *is_debug_mode, unique_name, task_name,
-                    *existing_work_policy, *initial_delay_seconds, *constraints,
-                    *backoff_policy, *out_of_quota_policy, *is_periodic,
-                    *frequency_seconds, tag, payload);
+                job_info_h handler;
+                job_info_create(&handler);
+                job_info_set_periodic(handler, 0);
+                job_info_set_persistent(handler, true);
+                job_scheduler_schedule(handler, unique_name);
+
+                std::string preference_key =
+                    "WmPayload_" + std::string(unique_name);
+                preference_set_string(preference_key.c_str(), payload);
 
                 job_service_callback_s callback = {StartJobCallback,
                                                    StopJobCallback};
-                job_scheduler.SetCallback(unique_name, callback, payload);
+
+                job_service_h service;
+                job_scheduler_service_add(unique_name, &callback, nullptr,
+                                          &service);
+
+                // job_scheduler.RegisterJob(
+                //     *is_debug_mode, unique_name, task_name,
+                //     *existing_work_policy, *initial_delay_seconds,
+                //     *constraints, *backoff_policy, *out_of_quota_policy,
+                //     *is_periodic, *frequency_seconds, tag, payload);
+
+                // job_scheduler.SetCallback(unique_name, callback, payload);
 
             } else {
                 RunBackgroundCallback(unique_name, payload);
