@@ -216,14 +216,12 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
 
         const std::string service_app_id = GetAppId().value() + "_service";
 
-        if (!CheckAppIsRunning(service_app_id.c_str())) {
-            // TODO : make sync
-
-            SendLaunchRequest(service_app_id.c_str());
-        }
-
         if (call.method_name() == kCancelAllTasks) {
             bundle *bund = bundle_create();
+            if(bund == nullptr){
+                LOG_ERROR("Failed create bundle");
+                result->Error("Error create bundle", "Failed Creating bundle.");
+            }
 
             bundle_add_str(bund, kMethodNameKey, method_name.c_str());
             int err = event_publish_app_event(event_id.c_str(), bund);
@@ -264,6 +262,11 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
 
             preference_set_int(kDispatcherHandleKey,
                                info.callback_dispathcer_handler_key);
+
+            if (!CheckAppIsRunning(service_app_id.c_str())) {
+                SendLaunchRequest(service_app_id.c_str());
+            }
+
             result->Success();
         } else if (method_name == kRegisterOneOffTask ||
                    method_name == kRegisterPeriodicTask) {
@@ -298,13 +301,12 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
                 GetOrNullFromEncodableMap<std::string>(&map, kPayloadKey)
                     .value_or("");
 
-            const auto &info = RegisterTaskInfo(
-                is_debug_mode, unique_name, task_name, existing_work_policy,
-                initial_delay_seconds, constraints_config,
-                backoff_policy_config, out_of_quota_policy, frequency_seconds,
-                tag, payload, is_periodic);
-
             bundle *bund = bundle_create();
+            
+            if(bund == nullptr){
+                LOG_ERROR("Failed create bundle");
+                result->Error("Error create bundle", "Failed Creating bundle.");
+            }
 
             bundle_add_str(bund, kMethodNameKey, method_name.c_str());
 
@@ -333,13 +335,12 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
             bundle_add_byte(bund, kIsPeriodicKey, &is_periodic, sizeof(bool));
 
             int err = event_publish_app_event(event_id.c_str(), bund);
-            bundle_free(bund);
-
             if (err) {
                 LOG_ERROR("Failed publish event: %s", get_error_message(err));
                 result->Error("Error publish event", "Error occured.");
                 return;
             }
+            bundle_free(bund);
 
             result->Success();
         } else if (method_name == kCancelTaskByUniqueName) {
@@ -350,8 +351,12 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
                 return;
             }
 
-            bundle *bund = nullptr;
-            bund = bundle_create();
+            bundle *bund = bundle_create();
+            if(bund == nullptr){
+                LOG_ERROR("Failed create bundle");
+                result->Error("Error create bundle", "Failed Creating bundle.");
+            }
+
             bundle_add_str(bund, kMethodNameKey, method_name.c_str());
             bundle_add_str(bund, kCancelTaskByUniqueName, name.value().c_str());
 
@@ -375,6 +380,11 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
             }
 
             bundle *bund = bundle_create();
+            if(bund == nullptr){
+                LOG_ERROR("Failed create bundle");
+                result->Error("Error create bundle", "Failed Creating bundle.");
+            }
+
             bundle_add_str(bund, kMethodNameKey, method_name.c_str());
             bundle_add_str(bund, kCancelTaskTagKey, tag.value().c_str());
 
@@ -524,6 +534,9 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
                 job_service_h service;
                 job_scheduler_service_add(unique_name, &callback, nullptr,
                                           &service);
+
+                // job_service_callback_s callback = {StartJobCallback,
+                //                                    StopJobCallback};
 
                 // job_scheduler.RegisterJob(
                 //     *is_debug_mode, unique_name, task_name,
