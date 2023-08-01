@@ -16,7 +16,7 @@ const rescheduledTaskKey = "be.tramckrijte.workmanagerExample.rescheduledTask";
 const failedTaskKey = "be.tramckrijte.workmanagerExample.failedTask";
 const simpleDelayedTask = "be.tramckrijte.workmanagerExample.simpleDelayedTask";
 const simplePeriodicTask =
-    "be.tramckrijte.workmanagerExample.simplePeriodicTask";
+    "simplePeriodicTask";
 const simplePeriodic1HourTask =
     "be.tramckrijte.workmanagerExample.simplePeriodic1HourTask";
 
@@ -174,7 +174,7 @@ class _MyAppState extends State<MyApp> {
                     child: Text("Register 1 hour Periodic Task"),
                     onPressed: () {
                       Workmanager().registerPeriodicTask(
-                        simplePeriodicTask,
+                        simplePeriodic1HourTask,
                         simplePeriodic1HourTask,
                         frequency: Duration(hours: 1),
                       );
