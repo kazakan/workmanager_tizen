@@ -44,26 +44,26 @@ const char *kUnknown = "unknown";
 const char *kOnResultSendMethod = "onResultSend";
 const char *kBackgroundChannelInitialized = "backgroundChannelInitialized";
 
-const char *kIsInDebugModeKey = "isInDebugMode";
-const char *kCallhandlekey = "callbackHandle";
-const char *kFrequencySecondsKey = "frequency";
-const char *kCancelTaskTagKey = "tag";
-const char *kCancelTaskUniqueNameKey = "uniqueName";
+const char *kIsInDebugMode = "isInDebugMode";
+const char *kCallbackhandle = "callbackHandle";
+const char *kFrequencySeconds = "frequency";
+const char *kCancelTaskTag = "tag";
+const char *kCancelTaskUniqueName = "uniqueName";
 
-const char *kUniquenameKey = "uniqueName";
-const char *kNameValueKey = "taskName";
-const char *kTagKey = "tag";
+const char *kUniquename = "uniqueName";
+const char *kNameValue = "taskName";
+const char *kTag = "tag";
 
-const char *kBgChannelInputDataKey = "be.tramckrijte.workmanager.INPUT_DATA";
-const char *kBgChannelDartTaskKey = "be.tramckrijte.workmanager.DART_TASK";
-const char *kDispatcherHandleKey = "WMANAGER_TIZEN_DISPATCHER_HANDLE_KEY";
+const char *kBgChannelInputData = "be.tramckrijte.workmanager.INPUT_DATA";
+const char *kBgChannelDartTask = "be.tramckrijte.workmanager.DART_TASK";
+const char *kDispatcherHandle = "WMANAGER_TIZEN_DISPATCHER_HANDLE_KEY";
 
-const char *kPayloadKey = "inputData";
+const char *kPayload = "inputData";
 
-const char *kIsPeriodicKey = "isPeriodic";
+const char *kIsPeriodic = "isPeriodic";
 
-const char *kConstraintsBundleKey = "constraintsBundle";
-const char *kBackOffPolicyBundleKey = "backoffPolicyBundle";
+const char *kConstraintsBundle = "constraintsBundle";
+const char *kBackOffPolicyBundle = "backoffPolicyBundle";
 
 const char *kNotInitializedErrMsg =
     "You have not properly initialized the Flutter WorkManager Package. "
@@ -255,11 +255,11 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
 
         if (method_name == kInitialize) {
             bool isDebugMode =
-                std::get<bool>(map[flutter::EncodableValue(kIsInDebugModeKey)]);
+                std::get<bool>(map[flutter::EncodableValue(kIsInDebugMode)]);
             int64_t handle =
-                std::get<int64_t>(map[flutter::EncodableValue(kCallhandlekey)]);
+                std::get<int64_t>(map[flutter::EncodableValue(kCallbackhandle)]);
 
-            preference_set_int(kDispatcherHandleKey, handle);
+            preference_set_int(kDispatcherHandle, handle);
 
             if (!CheckAppIsRunning(service_app_id.c_str())) {
                 SendLaunchRequest(service_app_id.c_str());
@@ -271,21 +271,21 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
             const bool is_periodic = method_name == kRegisterPeriodicTask;
 
             bool is_debug_mode =
-                std::get<bool>(map[flutter::EncodableValue(kIsInDebugModeKey)]);
+                std::get<bool>(map[flutter::EncodableValue(kIsInDebugMode)]);
             std::string unique_name = std::get<std::string>(
-                map[flutter::EncodableValue(kUniquenameKey)]);
+                map[flutter::EncodableValue(kUniquename)]);
             std::string task_name = std::get<std::string>(
-                map[flutter::EncodableValue(kNameValueKey)]);
+                map[flutter::EncodableValue(kNameValue)]);
             std::string tag =
-                GetOrNullFromEncodableMap<std::string>(&map, kTagKey)
+                GetOrNullFromEncodableMap<std::string>(&map, kTag)
                     .value_or("");
             ExistingWorkPolicy existing_work_policy =
                 ExtractExistingWorkPolicyFromMap(map);
             int32_t initial_delay_seconds = GetOrNullFromEncodableMap<int32_t>(
-                                                &map, kInitialDelaySecondsKey)
+                                                &map, kInitialDelaySeconds)
                                                 .value_or(0);
             int32_t frequency_seconds =
-                GetOrNullFromEncodableMap<int32_t>(&map, kFrequencySecondsKey)
+                GetOrNullFromEncodableMap<int32_t>(&map, kFrequencySeconds)
                     .value_or(0);
 
             Constraints constraints_config =
@@ -296,7 +296,7 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
                 ExtractBackoffPolicyConfigFromMap(
                     map, is_periodic ? kMinBackOffPeriodic : kMinBackOffOneOff);
             std::string payload =
-                GetOrNullFromEncodableMap<std::string>(&map, kPayloadKey)
+                GetOrNullFromEncodableMap<std::string>(&map, kPayload)
                     .value_or("");
 
             bundle *bund = bundle_create();
@@ -308,29 +308,29 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
 
             bundle_add_str(bund, kMethodNameKey, method_name.c_str());
 
-            bundle_add_byte(bund, kIsInDebugModeKey, &is_debug_mode,
+            bundle_add_byte(bund, kIsInDebugMode, &is_debug_mode,
                             sizeof(bool));
-            bundle_add_str(bund, kUniquenameKey, unique_name.c_str());
-            bundle_add_str(bund, kNameValueKey, task_name.c_str());
-            bundle_add_str(bund, kTagKey, tag.c_str());
-            bundle_add_byte(bund, kExistingWorkpolicykey, &existing_work_policy,
+            bundle_add_str(bund, kUniquename, unique_name.c_str());
+            bundle_add_str(bund, kNameValue, task_name.c_str());
+            bundle_add_str(bund, kTag, tag.c_str());
+            bundle_add_byte(bund, kExistingWorkpolicy, &existing_work_policy,
                             sizeof(ExistingWorkPolicy));
 
-            bundle_add_byte(bund, kInitialDelaySecondsKey,
+            bundle_add_byte(bund, kInitialDelaySeconds,
                             &initial_delay_seconds, sizeof(int32_t));
-            bundle_add_byte(bund, kFrequencySecondsKey, &frequency_seconds,
+            bundle_add_byte(bund, kFrequencySeconds, &frequency_seconds,
                             sizeof(int32_t));
 
-            bundle_add_str(bund, kPayloadKey, payload.c_str());
+            bundle_add_str(bund, kPayload, payload.c_str());
 
-            bundle_add_byte(bund, kConstraintsBundleKey, &constraints_config,
+            bundle_add_byte(bund, kConstraintsBundle, &constraints_config,
                             sizeof(Constraints));
-            bundle_add_byte(bund, kBackOffPolicyBundleKey,
+            bundle_add_byte(bund, kBackOffPolicyBundle,
                             &backoff_policy_config,
                             sizeof(BackoffPolicyTaskConfig));
-            bundle_add_byte(bund, kOutofQuotaPolicyKey, &out_of_quota_policy,
+            bundle_add_byte(bund, kOutofQuotaPolicy, &out_of_quota_policy,
                             sizeof(OutOfQuotaPolicy));
-            bundle_add_byte(bund, kIsPeriodicKey, &is_periodic, sizeof(bool));
+            bundle_add_byte(bund, kIsPeriodic, &is_periodic, sizeof(bool));
 
             int ret = event_publish_app_event(event_id.c_str(), bund);
             if (ret != EVENT_ERROR_NONE) {
@@ -343,7 +343,7 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
             result->Success();
         } else if (method_name == kCancelTaskByUniqueName) {
             auto name = GetOrNullFromEncodableMap<std::string>(
-                &map, kCancelTaskUniqueNameKey);
+                &map, kCancelTaskUniqueName);
             if (!name.has_value()) {
                 result->Error(kInvalidArg, "No name provided");
                 return;
@@ -371,7 +371,7 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
 
         } else if (method_name == kCancelTaskByTag) {
             auto tag =
-                GetOrNullFromEncodableMap<std::string>(&map, kCancelTaskTagKey);
+                GetOrNullFromEncodableMap<std::string>(&map, kCancelTaskTag);
             if (!tag.has_value()) {
                 result->Error(kInvalidArg, "No tag provided");
                 return;
@@ -384,7 +384,7 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
             }
 
             bundle_add_str(bund, kMethodNameKey, method_name.c_str());
-            bundle_add_str(bund, kCancelTaskTagKey, tag.value().c_str());
+            bundle_add_str(bund, kCancelTaskTag, tag.value().c_str());
 
             int ret = event_publish_app_event(event_id.c_str(), bund);
             if (ret != EVENT_ERROR_NONE) {
@@ -420,12 +420,12 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
         }
 
         flutter::EncodableMap arg = {
-            {flutter::EncodableValue(kBgChannelDartTaskKey),
+            {flutter::EncodableValue(kBgChannelDartTask),
              flutter::EncodableValue(job_id)},
         };
 
         if (payload.size() > 0) {
-            arg[flutter::EncodableValue(kBgChannelInputDataKey)] =
+            arg[flutter::EncodableValue(kBgChannelInputData)] =
                 flutter::EncodableValue(payload);
         }
 
@@ -490,29 +490,29 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
             BackoffPolicyTaskConfig *backoff_policy = nullptr;
             OutOfQuotaPolicy *out_of_quota_policy = nullptr;
 
-            bundle_get_byte(event_data, kIsInDebugModeKey,
+            bundle_get_byte(event_data, kIsInDebugMode,
                             (void **)&is_debug_mode, &size);
-            bundle_get_str(event_data, kUniquenameKey, &unique_name);
-            bundle_get_str(event_data, kNameValueKey, &task_name);
-            bundle_get_str(event_data, kTagKey, &tag);
-            bundle_get_byte(event_data, kExistingWorkpolicykey,
+            bundle_get_str(event_data, kUniquename, &unique_name);
+            bundle_get_str(event_data, kNameValue, &task_name);
+            bundle_get_str(event_data, kTag, &tag);
+            bundle_get_byte(event_data, kExistingWorkpolicy,
                             (void **)&existing_work_policy, &size);
 
-            bundle_get_byte(event_data, kInitialDelaySecondsKey,
+            bundle_get_byte(event_data, kInitialDelaySeconds,
                             (void **)&initial_delay_seconds, &size);
-            bundle_get_byte(event_data, kFrequencySecondsKey,
+            bundle_get_byte(event_data, kFrequencySeconds,
                             (void **)&frequency_seconds, &size);
-            bundle_get_str(event_data, kPayloadKey, &payload);
-            bundle_get_byte(event_data, kIsPeriodicKey, (void **)&is_periodic,
+            bundle_get_str(event_data, kPayload, &payload);
+            bundle_get_byte(event_data, kIsPeriodic, (void **)&is_periodic,
                             &size);
 
-            bundle_get_byte(event_data, kConstraintsBundleKey,
+            bundle_get_byte(event_data, kConstraintsBundle,
                             (void **)&constraints, &size);
-            bundle_get_byte(event_data, kBackOffPolicyBundleKey,
+            bundle_get_byte(event_data, kBackOffPolicyBundle,
                             (void **)&backoff_policy, &size);
-            bundle_get_byte(event_data, kOutofQuotaPolicyKey,
+            bundle_get_byte(event_data, kOutofQuotaPolicy,
                             (void **)&out_of_quota_policy, &size);
-            bundle_get_byte(event_data, kIsPeriodicKey, (void **)&is_periodic,
+            bundle_get_byte(event_data, kIsPeriodic, (void **)&is_periodic,
                             &size);
 
             if (*is_periodic) {
@@ -550,7 +550,7 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
 
         } else if (method_name_str == kCancelTaskByUniqueName) {
             char *unique_name;
-            bundle_get_str(event_data, kUniquenameKey, &unique_name);
+            bundle_get_str(event_data, kUniquename, &unique_name);
 
             job_scheduler.CancelByUniqueName(unique_name);
 

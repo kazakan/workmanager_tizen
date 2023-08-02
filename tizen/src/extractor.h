@@ -11,17 +11,17 @@
 
 typedef flutter::MethodCall<flutter::EncodableValue> FlMethodCall;
 
-const char *kInitialDelaySecondsKey = "initialDelaySeconds";
-const char *kBackOffPolicyTypeKey = "backoffPolicyType";
-const char *kBackOffPolicyDelayMillisKey = "backoffDelayInMilliseconds";
-const char *kOutofQuotaPolicyKey = "outOfQuotaPolicy";
-const char *kExistingWorkpolicykey = "existingWorkPolicy";
+const char *kInitialDelaySeconds = "initialDelaySeconds";
+const char *kBackOffPolicyType = "backoffPolicyType";
+const char *kBackOffPolicyDelayMillis = "backoffDelayInMilliseconds";
+const char *kOutofQuotaPolicy = "outOfQuotaPolicy";
+const char *kExistingWorkpolicy = "existingWorkPolicy";
 
-const char *kNetworkTypekey = "networkType";
-const char *kBatteryNotLowKey = "requiresBatteryNotLow";
-const char *kChargingKey = "requiresCharging";
-const char *kDeviceidlekey = "requiresDeviceIdle";
-const char *kStorageNotLowKey = "requiresStorageNotLow";
+const char *kNetworkType = "networkType";
+const char *kBatteryNotLow = "requiresBatteryNotLow";
+const char *kCharging = "requiresCharging";
+const char *kDeviceidle = "requiresDeviceIdle";
+const char *kStorageNotLow = "requiresStorageNotLow";
 
 // NetworkType
 const char *kConnected = "connectd";
@@ -88,21 +88,21 @@ NetworkType StringToNetworkType(const std::string &str) {
 ExistingWorkPolicy ExtractExistingWorkPolicyFromMap(
     const flutter::EncodableMap &map) {
     std::string value;
-    GetValueFromEncodableMap<std::string>(&map, kExistingWorkpolicykey, value);
+    GetValueFromEncodableMap<std::string>(&map, kExistingWorkpolicy, value);
     return StringToExistingWorkPolicy(value);
 }
 
 BackoffPolicyTaskConfig ExtractBackoffPolicyConfigFromMap(
     const flutter::EncodableMap &map, int32_t minimum_backoff_delay) {
     std::string value;
-    if (!GetValueFromEncodableMap(&map, kBackOffPolicyTypeKey, value)) {
+    if (!GetValueFromEncodableMap(&map, kBackOffPolicyType, value)) {
         return {BackoffPolicy::kLinear, 15 * 60, minimum_backoff_delay, 0};
     }
 
     BackoffPolicy backoff_policy = StringToBackoffPolicy(value);
 
     int32_t requested_backoff_delay =
-        GetOrNullFromEncodableMap<int32_t>(&map, kBackOffPolicyDelayMillisKey)
+        GetOrNullFromEncodableMap<int32_t>(&map, kBackOffPolicyDelayMillis)
             .value_or(15 * 60 * 1000) /
         1000;
 
@@ -117,14 +117,14 @@ BackoffPolicyTaskConfig ExtractBackoffPolicyConfigFromMap(
 OutOfQuotaPolicy ExtractOutOfQuotaPolicyFromMap(
     const flutter::EncodableMap &map) {
     std::string value =
-        GetOrNullFromEncodableMap<std::string>(&map, kOutofQuotaPolicyKey)
+        GetOrNullFromEncodableMap<std::string>(&map, kOutofQuotaPolicy)
             .value_or("");
     return StringToOutOfQuotaPolicy(value);
 }
 
 NetworkType ExtractNetworkTypeFromMap(const flutter::EncodableMap &args) {
     std::optional<std::string> value =
-        GetOrNullFromEncodableMap<std::string>(&args, kNetworkTypekey);
+        GetOrNullFromEncodableMap<std::string>(&args, kNetworkType);
     if (!value.has_value()) {
         return NetworkType::kNotRequired;
     }
@@ -135,14 +135,14 @@ NetworkType ExtractNetworkTypeFromMap(const flutter::EncodableMap &args) {
 Constraints ExtractConstraintConfigFromMap(const flutter::EncodableMap &map) {
     NetworkType network_type = ExtractNetworkTypeFromMap(map);
     bool battery_not_low =
-        GetOrNullFromEncodableMap<bool>(&map, kBatteryNotLowKey)
+        GetOrNullFromEncodableMap<bool>(&map, kBatteryNotLow)
             .value_or(false);
     bool charging =
-        GetOrNullFromEncodableMap<bool>(&map, kChargingKey).value_or(false);
+        GetOrNullFromEncodableMap<bool>(&map, kCharging).value_or(false);
     bool device_idle =
-        GetOrNullFromEncodableMap<bool>(&map, kDeviceidlekey).value_or(false);
+        GetOrNullFromEncodableMap<bool>(&map, kDeviceidle).value_or(false);
     bool storage_not_low =
-        GetOrNullFromEncodableMap<bool>(&map, kStorageNotLowKey)
+        GetOrNullFromEncodableMap<bool>(&map, kStorageNotLow)
             .value_or(false);
 
     return Constraints(network_type, battery_not_low, charging,
