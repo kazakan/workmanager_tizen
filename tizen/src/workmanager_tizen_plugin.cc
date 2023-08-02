@@ -233,7 +233,7 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
             int ret = event_publish_app_event(event_id.c_str(), bund);
             bundle_free(bund);
 
-            if (ret != BUNDLE_TYPE_NONE) {
+            if (ret != EVENT_ERROR_NONE) {
                 LOG_ERROR("Failed publich app event: %s",
                           get_error_message(ret));
 
