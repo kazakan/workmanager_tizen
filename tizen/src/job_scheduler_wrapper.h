@@ -8,6 +8,8 @@
 
 #include "options.h"
 
+extern const char* kPayloadPreferencePrefix;
+
 class JobScheduler {
    public:
     JobScheduler(JobScheduler const&) = delete;

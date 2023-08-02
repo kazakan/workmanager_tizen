@@ -7,6 +7,8 @@
 #include "log.h"
 #include "options.h"
 
+const char* kPayloadPreferencePrefix = "WmPayload_";
+
 JobScheduler::JobScheduler() { job_scheduler_init(); }
 
 int JobScheduler::SetJobConstraints(job_info_h job_info,
@@ -47,7 +49,7 @@ void JobScheduler::RegisterJob(
     const int32_t initial_delay_seconds, const Constraints& constraints_config,
     const BackoffPolicyTaskConfig& backoff_policy_config,
     const OutOfQuotaPolicy& out_of_quota_policy, const bool isPeriodic,
-    const int32_t frequency_seconds, const std::string& tag,
+    const int32_t frequency_minutes, const std::string& tag,
     const std::string& payload) {
     job_info_h job_info;
     int err = job_info_create(&job_info);
@@ -63,7 +65,7 @@ void JobScheduler::RegisterJob(
     }
 
     if (isPeriodic) {
-        err = job_info_set_periodic(job_info, frequency_seconds);
+        err = job_info_set_periodic(job_info, frequency_minutes);
         if (err) {
             LOG_ERROR("Failed to set job info periodic: %s",
                       get_error_message(err));
@@ -183,5 +185,5 @@ void JobScheduler::SavePayload(const std::string& job_name,
 }
 
 std::string JobScheduler::GetPayloadKey(const std::string& job_name) {
-    return "WmPayload_" + job_name;
+    return kPayloadPreferencePrefix + job_name;
 }

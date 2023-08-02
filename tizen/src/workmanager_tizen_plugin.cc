@@ -433,7 +433,7 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
         job_info_get_job_id(job_info, &job_id);
 
         std::string job_id_str(job_id);
-        std::string preference_key("WmPayload_" + job_id_str);
+        std::string preference_key(kPayloadPreferencePrefix + job_id_str);
 
         char *payload;
         preference_get_string(preference_key.c_str(), &payload);
@@ -517,7 +517,7 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
                 job_scheduler_schedule(handler, unique_name);
 
                 std::string preference_key =
-                    "WmPayload_" + std::string(unique_name);
+                    kPayloadPreferencePrefix + std::string(unique_name);
                 preference_set_string(preference_key.c_str(), payload);
 
                 job_service_callback_s callback = {StartJobCallback,
@@ -532,7 +532,7 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
 
                 // job_scheduler.RegisterJob(
                 //     *is_debug_mode, unique_name, task_name,
-                //     *existing_work_policy, *initial_delay_seconds,
+                //     *existing_work_policy, *initial_delay_seconds / 60,
                 //     *constraints, *backoff_policy, *out_of_quota_policy,
                 //     *is_periodic, *frequency_seconds, tag, payload);
 
