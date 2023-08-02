@@ -6,7 +6,6 @@
 
 #include "log.h"
 #include "options.h"
-#include "tasks.h"
 
 JobScheduler::JobScheduler() { job_scheduler_init(); }
 

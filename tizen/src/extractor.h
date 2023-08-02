@@ -7,7 +7,6 @@
 #include <string>
 
 #include "options.h"
-#include "tasks.h"
 #include "utils.h"
 
 typedef flutter::MethodCall<flutter::EncodableValue> FlMethodCall;

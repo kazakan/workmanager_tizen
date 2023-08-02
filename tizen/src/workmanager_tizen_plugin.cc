@@ -218,7 +218,7 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
 
         if (call.method_name() == kCancelAllTasks) {
             bundle *bund = bundle_create();
-            if(bund == nullptr){
+            if (bund == nullptr) {
                 LOG_ERROR("Failed create bundle");
                 result->Error("Error create bundle", "Failed Creating bundle.");
             }
@@ -234,7 +234,7 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
                 result->Error("Failed", "Failed publish app event");
                 return;
             }
-            
+
             result->Success();
             return;
         }
@@ -252,10 +252,8 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
                 std::get<bool>(map[flutter::EncodableValue(kIsInDebugModeKey)]);
             int64_t handle =
                 std::get<int64_t>(map[flutter::EncodableValue(kCallhandlekey)]);
-            const auto &info = InitializeTaskInfo(handle, isDebugMode);
 
-            preference_set_int(kDispatcherHandleKey,
-                               info.callback_dispathcer_handler_key);
+            preference_set_int(kDispatcherHandleKey, handle);
 
             if (!CheckAppIsRunning(service_app_id.c_str())) {
                 SendLaunchRequest(service_app_id.c_str());
@@ -296,8 +294,8 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
                     .value_or("");
 
             bundle *bund = bundle_create();
-            
-            if(bund == nullptr){
+
+            if (bund == nullptr) {
                 LOG_ERROR("Failed create bundle");
                 result->Error("Error create bundle", "Failed Creating bundle.");
             }
@@ -346,7 +344,7 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
             }
 
             bundle *bund = bundle_create();
-            if(bund == nullptr){
+            if (bund == nullptr) {
                 LOG_ERROR("Failed create bundle");
                 result->Error("Error create bundle", "Failed Creating bundle.");
             }
@@ -374,7 +372,7 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
             }
 
             bundle *bund = bundle_create();
-            if(bund == nullptr){
+            if (bund == nullptr) {
                 LOG_ERROR("Failed create bundle");
                 result->Error("Error create bundle", "Failed Creating bundle.");
             }
