@@ -107,6 +107,10 @@ void SendTerminateRequestBgApp(const char *service_id) {
 bool CheckAppIsRunning(const char *app_id) {
     app_context_h context;
     int ret = app_manager_get_app_context(app_id, &context);
+    if(ret == APP_MANAGER_ERROR_NO_SUCH_APP){
+        return false;
+    }
+
     if (ret != APP_MANAGER_ERROR_NONE) {
         LOG_ERROR("%s", get_error_message(ret));
         return false;
