@@ -83,6 +83,9 @@ const int32_t kMinBackOffOneOff = 10 * 1000;
 
 const char *kEventName = "pass_taskinfo_event";
 
+const char *kInvalidArg = "Invalid argument";
+const char *kOperationFailed = "Operation failed/cancelled";
+
 void SendTerminateRequestBgApp(const char *service_id) {
     app_context_h context;
     int ret = app_manager_get_app_context(service_id, &context);
@@ -219,7 +222,7 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
             bundle *bund = bundle_create();
             if (!bund) {
                 LOG_ERROR("Failed create bundle");
-                result->Error("Error create bundle", "Failed Creating bundle.");
+                result->Error(kOperationFailed, "Failed Creating bundle.");
             }
 
             bundle_add_str(bund, kMethodNameKey, method_name.c_str());
@@ -230,7 +233,7 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
                 LOG_ERROR("Failed publich app event: %s",
                           get_error_message(ret));
 
-                result->Error("Failed", "Failed publish app event");
+                result->Error(kOperationFailed, "Failed publish app event");
                 return;
             }
 
@@ -240,7 +243,7 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
 
         // TODO : Unify error codes with a constant
         if (!std::holds_alternative<flutter::EncodableMap>(arguments)) {
-            result->Error("WRONG_ARGS", "No argument provided");
+            result->Error(kInvalidArg, "No argument provided");
             return;
         }
 
@@ -296,7 +299,7 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
 
             if (!bund) {
                 LOG_ERROR("Failed create bundle");
-                result->Error("Error create bundle", "Failed Creating bundle.");
+                result->Error(kOperationFailed, "Failed Creating bundle.");
             }
 
             bundle_add_str(bund, kMethodNameKey, method_name.c_str());
@@ -328,7 +331,7 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
             int ret = event_publish_app_event(event_id.c_str(), bund);
             if (ret != EVENT_ERROR_NONE) {
                 LOG_ERROR("Failed publish event: %s", get_error_message(ret));
-                result->Error("Error publish event", "Error occured.");
+                result->Error(kOperationFailed, "Error occured.");
                 return;
             }
             bundle_free(bund);
@@ -338,14 +341,14 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
             auto name = GetOrNullFromEncodableMap<std::string>(
                 &map, kCancelTaskUniqueNameKey);
             if (!name.has_value()) {
-                result->Error("WRONG ARGS", "No name provided");
+                result->Error(kInvalidArg, "No name provided");
                 return;
             }
 
             bundle *bund = bundle_create();
             if (!bund) {
                 LOG_ERROR("Failed create bundle");
-                result->Error("Error create bundle", "Failed Creating bundle.");
+                result->Error(kOperationFailed, "Failed Creating bundle.");
             }
 
             bundle_add_str(bund, kMethodNameKey, method_name.c_str());
@@ -356,7 +359,7 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
 
             if (ret != BUNDLE_ERROR_NONE) {
                 LOG_ERROR("Failed publish event: %s", get_error_message(ret));
-                result->Error("Error publish event", "Error occured.");
+                result->Error(kOperationFailed, "Failed Publish event.");
                 return;
             }
 
@@ -366,14 +369,14 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
             auto tag =
                 GetOrNullFromEncodableMap<std::string>(&map, kCancelTaskTagKey);
             if (!tag.has_value()) {
-                result->Error("WRONG ARGS", "No tag provided");
+                result->Error(kInvalidArg, "No tag provided");
                 return;
             }
 
             bundle *bund = bundle_create();
             if (!bund) {
                 LOG_ERROR("Failed create bundle");
-                result->Error("Error create bundle", "Failed Creating bundle.");
+                result->Error(kOperationFailed, "Failed Creating bundle.");
             }
 
             bundle_add_str(bund, kMethodNameKey, method_name.c_str());
@@ -382,7 +385,7 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
             int ret = event_publish_app_event(event_id.c_str(), bund);
             if (ret != EVENT_ERROR_NONE) {
                 LOG_ERROR("Failed publish event: %s", get_error_message(ret));
-                result->Error("Error publish event", "Error occured.");
+                result->Error(kOperationFailed, "Failed publish event.");
                 bundle_free(bund);
                 return;
             }
