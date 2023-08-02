@@ -36,7 +36,7 @@ To use this plugin, you need to declare privileges in `tizen-manifest.xml` of yo
 
 - Galaxy Watch series (running Tizen 5.5 or above)
 
-## Limiations
+## Limitations
 
 This plugin does not support TV and TV emulations.
 
