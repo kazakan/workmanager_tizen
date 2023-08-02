@@ -32,7 +32,8 @@ class JobScheduler {
                      const bool isPeriodic = false,
                      const int32_t frequency_seconds = 0,
                      const std::string& tag = "",
-                     const std::string& payload = "");
+                     const std::string& payload = "",
+                     job_service_callback_s* callback = nullptr);
 
     void CancelByTag(const std::string& task);
 
@@ -41,7 +42,7 @@ class JobScheduler {
     void CancelAll();
 
     job_service_h SetCallback(const char* job_name,
-                              job_service_callback_s& callback,
+                              job_service_callback_s* callback,
                               void* user_data);
 
     std::vector<std::string> GetAllJobs();

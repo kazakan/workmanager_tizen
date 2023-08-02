@@ -50,7 +50,7 @@ void JobScheduler::RegisterJob(
     const BackoffPolicyTaskConfig& backoff_policy_config,
     const OutOfQuotaPolicy& out_of_quota_policy, const bool isPeriodic,
     const int32_t frequency_minutes, const std::string& tag,
-    const std::string& payload) {
+    const std::string& payload, job_service_callback_s* callback) {
     job_info_h job_info;
     int ret = job_info_create(&job_info);
     if (ret != JOB_ERROR_NONE) {
@@ -122,6 +122,10 @@ void JobScheduler::RegisterJob(
         SavePayload(unique_name, payload);
     }
 
+    if (callback) {
+        SetCallback(unique_name.c_str(), callback, nullptr);
+    }
+
     job_info_destroy(job_info);
 }
 
@@ -150,10 +154,10 @@ void JobScheduler::CancelAll() {
 }
 
 job_service_h JobScheduler::SetCallback(const char* job_name,
-                                        job_service_callback_s& callback,
+                                        job_service_callback_s* callback,
                                         void* user_data) {
     job_service_h service = nullptr;
-    int ret = job_scheduler_service_add(job_name, &callback, nullptr, &service);
+    int ret = job_scheduler_service_add(job_name, callback, nullptr, &service);
     if (ret != JOB_ERROR_NONE) {
         LOG_ERROR("Failed to add service to job: %s", get_error_message(ret));
         return nullptr;
