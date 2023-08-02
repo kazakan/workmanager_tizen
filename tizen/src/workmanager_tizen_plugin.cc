@@ -86,27 +86,26 @@ const char *kEventName = "pass_taskinfo_event";
 void SendTerminateRequestBgApp(const char *service_id) {
     app_context_h context;
     int ret = app_manager_get_app_context(service_id, &context);
-    if (ret) {
+    if (ret != APP_MANAGER_ERROR_NONE) {
         LOG_ERROR("%s", get_error_message(ret));
     }
 
     ret = app_manager_request_terminate_bg_app(context);
-    if (ret) {
+    if (ret != APP_MANAGER_ERROR_NONE) {
         LOG_ERROR("%s", get_error_message(ret));
     }
 
     ret = app_context_destroy(context);
-    if (ret) {
+    if (ret != APP_MANAGER_ERROR_NONE) {
         LOG_ERROR("%s", get_error_message(ret));
     }
 }
 
 bool CheckAppIsRunning(const char *app_id) {
     app_context_h context;
-    int err = app_manager_get_app_context(app_id, &context);
-    if (err == APP_MANAGER_ERROR_NO_SUCH_APP) return false;
-    if (err) {
-        LOG_ERROR("%s", get_error_message(err));
+    int ret = app_manager_get_app_context(app_id, &context);
+    if (ret != APP_MANAGER_ERROR_NONE) {
+        LOG_ERROR("%s", get_error_message(ret));
         return false;
     }
 
@@ -125,31 +124,31 @@ bool CheckAppIsRunning(const char *app_id) {
 void SendLaunchRequest(const char *app_id) {
     app_control_h control;
     int ret = app_control_create(&control);
-    if (ret) {
+    if (ret != APP_CONTROL_ERROR_NONE) {
         LOG_ERROR("%s", get_error_message(ret));
     }
 
     ret = app_control_set_app_id(control, app_id);
-    if (ret) {
+    if (ret != APP_CONTROL_ERROR_NONE) {
         LOG_ERROR("%s", get_error_message(ret));
     }
 
     ret = app_control_send_launch_request(control, NULL, NULL);
-    if (ret) {
+    if (ret != APP_CONTROL_ERROR_NONE) {
         LOG_ERROR("%s", get_error_message(ret));
     }
 
     ret = app_control_destroy(control);
-    if (ret) {
+    if (ret != APP_CONTROL_ERROR_NONE) {
         LOG_ERROR("%s", get_error_message(ret));
     }
 }
 
 bool CheckIsServiceApp() {
     char *app_id;
-    int err = app_manager_get_app_id(getpid(), &app_id);
-    if (err) {
-        LOG_ERROR("Failed to get app id: %s", get_error_message(err));
+    int ret = app_manager_get_app_id(getpid(), &app_id);
+    if (ret != APP_MANAGER_ERROR_NONE) {
+        LOG_ERROR("Failed to get app id: %s", get_error_message(ret));
         return false;
     }
     app_info_h app_info;
@@ -218,18 +217,18 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
 
         if (call.method_name() == kCancelAllTasks) {
             bundle *bund = bundle_create();
-            if (bund == nullptr) {
+            if (!bund) {
                 LOG_ERROR("Failed create bundle");
                 result->Error("Error create bundle", "Failed Creating bundle.");
             }
 
             bundle_add_str(bund, kMethodNameKey, method_name.c_str());
-            int err = event_publish_app_event(event_id.c_str(), bund);
+            int ret = event_publish_app_event(event_id.c_str(), bund);
             bundle_free(bund);
 
-            if (err) {
+            if (ret != BUNDLE_TYPE_NONE) {
                 LOG_ERROR("Failed publich app event: %s",
-                          get_error_message(err));
+                          get_error_message(ret));
 
                 result->Error("Failed", "Failed publish app event");
                 return;
@@ -295,7 +294,7 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
 
             bundle *bund = bundle_create();
 
-            if (bund == nullptr) {
+            if (!bund) {
                 LOG_ERROR("Failed create bundle");
                 result->Error("Error create bundle", "Failed Creating bundle.");
             }
@@ -326,9 +325,9 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
                             sizeof(OutOfQuotaPolicy));
             bundle_add_byte(bund, kIsPeriodicKey, &is_periodic, sizeof(bool));
 
-            int err = event_publish_app_event(event_id.c_str(), bund);
-            if (err) {
-                LOG_ERROR("Failed publish event: %s", get_error_message(err));
+            int ret = event_publish_app_event(event_id.c_str(), bund);
+            if (ret != EVENT_ERROR_NONE) {
+                LOG_ERROR("Failed publish event: %s", get_error_message(ret));
                 result->Error("Error publish event", "Error occured.");
                 return;
             }
@@ -344,7 +343,7 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
             }
 
             bundle *bund = bundle_create();
-            if (bund == nullptr) {
+            if (!bund) {
                 LOG_ERROR("Failed create bundle");
                 result->Error("Error create bundle", "Failed Creating bundle.");
             }
@@ -352,11 +351,11 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
             bundle_add_str(bund, kMethodNameKey, method_name.c_str());
             bundle_add_str(bund, kCancelTaskByUniqueName, name.value().c_str());
 
-            int err = event_publish_app_event(event_id.c_str(), bund);
+            int ret = event_publish_app_event(event_id.c_str(), bund);
             bundle_free(bund);
 
-            if (err) {
-                LOG_ERROR("Failed publish event: %s", get_error_message(err));
+            if (ret != BUNDLE_ERROR_NONE) {
+                LOG_ERROR("Failed publish event: %s", get_error_message(ret));
                 result->Error("Error publish event", "Error occured.");
                 return;
             }
@@ -372,7 +371,7 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
             }
 
             bundle *bund = bundle_create();
-            if (bund == nullptr) {
+            if (!bund) {
                 LOG_ERROR("Failed create bundle");
                 result->Error("Error create bundle", "Failed Creating bundle.");
             }
@@ -380,9 +379,9 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
             bundle_add_str(bund, kMethodNameKey, method_name.c_str());
             bundle_add_str(bund, kCancelTaskTagKey, tag.value().c_str());
 
-            int err = event_publish_app_event(event_id.c_str(), bund);
-            if (err) {
-                LOG_ERROR("Failed publish event: %s", get_error_message(err));
+            int ret = event_publish_app_event(event_id.c_str(), bund);
+            if (ret != EVENT_ERROR_NONE) {
+                LOG_ERROR("Failed publish event: %s", get_error_message(ret));
                 result->Error("Error publish event", "Error occured.");
                 bundle_free(bund);
                 return;
@@ -447,8 +446,8 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
 
     static std::optional<std::string> GetAppId() {
         char *app_id;
-        int err = app_manager_get_app_id(getpid(), &app_id);
-        if (err == 0) {
+        int ret = app_manager_get_app_id(getpid(), &app_id);
+        if (ret == 0) {
             return std::string(app_id);
         }
 
@@ -512,7 +511,7 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
             if (*is_periodic) {
                 job_info_h handler;
                 job_info_create(&handler);
-                job_info_set_periodic(handler, 0);
+                job_info_set_periodic(handler, *frequency_seconds / 60);
                 job_info_set_persistent(handler, true);
                 job_scheduler_schedule(handler, unique_name);
 
@@ -532,9 +531,9 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
 
                 // job_scheduler.RegisterJob(
                 //     *is_debug_mode, unique_name, task_name,
-                //     *existing_work_policy, *initial_delay_seconds / 60,
+                //     *existing_work_policy, *initial_delay_seconds,
                 //     *constraints, *backoff_policy, *out_of_quota_policy,
-                //     *is_periodic, *frequency_seconds, tag, payload);
+                //     *is_periodic, *frequency_seconds / 60, tag, payload);
 
                 // job_scheduler.SetCallback(unique_name, callback, payload);
 
