@@ -1,18 +1,52 @@
 # workmanager_tizen
 
-A new Flutter plugin project.
+[![pub package](https://img.shields.io/pub/v/workmanager_tizen.svg)](https://pub.dev/packages/workmanager_tizen)
 
-## Getting Started
+The Tizen implementation of [`workmanager`](https://pub.dev/packages/workmanager).
 
-This project is a starting point for a Flutter
-[plug-in package](https://flutter.dev/developing-packages/),
-a specialized package that includes platform-specific implementation code for
-Android and/or iOS.
+## Usage
 
-For help getting started with Flutter development, view the
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+ This package is not an _endorsed_ implementation of `workmanager`. Therefore, you have to include `workmanager_tizen` alongside `workmanager` as dependencies in your `pubspec.yaml` file.
 
-The plugin project was generated without specifying the `--platforms` flag, no platforms are currently supported.
-To add platforms, run `flutter create -t plugin --platforms <platforms> .` in this directory.
-You can also find a detailed instruction on how to add platforms in the `pubspec.yaml` at https://flutter.dev/docs/development/packages-and-plugins/developing-packages#plugin-platforms.
+ ```yaml
+dependencies:
+  workmanager: ^0.5.1
+  workmanager_tizen: ^0.0.1
+```
+
+Then you can import `workmanager` in your Dart code:
+
+```dart
+import 'package:workmanager/workmanager.dart';
+```
+
+For detailed usage, see https://pub.dev/packages/workmanager#usage.
+
+## Required privileges
+
+To use this plugin, you need to declare privileges in `tizen-manifest.xml` of your ui and service application.
+
+``` xml
+<privileges>
+  <privilege>http://tizen.org/privilege/appmanager.launch</privilege>
+</privileges>
+```
+
+## Supported devices
+
+- Galaxy Watch series (running Tizen 5.5 or above)
+
+## Limiations
+
+This plugin does not support TV and TV emulations.
+
+The following options are not supported.
+- ``
+- ``
+- ``
+
+This plugin only supports `multi` type of flutter-tizen application.
+
+`callbackDispatcher` should be entry point of service app.
+
+Service app name should be `"your_ui_app_name"+"_service"`
