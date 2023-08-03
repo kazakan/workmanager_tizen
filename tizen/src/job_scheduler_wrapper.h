@@ -47,8 +47,10 @@ class JobScheduler {
     ~JobScheduler() = default;
 
     void SavePayload(const std::string& job_name, const std::string& payload);
+    void SaveJobInfo(const std::string& job_name, const JobInfo job_info);
 
     std::string GetPayloadKey(const std::string& job_name);
+    std::string GetJobInfoKey(const std::string& job_name);
 };
 
 #endif  // FLUTTER_PLUGIN_WORKMANAGER_JOB_SCHEDULER_WRAPPER_H_

@@ -207,3 +207,20 @@ void JobScheduler::SavePayload(const std::string& job_name,
 std::string JobScheduler::GetPayloadKey(const std::string& job_name) {
     return kPayloadPreferencePrefix + job_name;
 }
+
+void JobScheduler::SaveJobInfo(const std::string& job_name, JobInfo job_info) {
+    const std::string jobinfo_key = GetJobInfoKey(job_name).c_str();
+    bundle* bund = bundle_create();
+    AddJobInfoToBundle(bund, job_info);
+    bundle_raw* encoded_bund;
+    int nbytes = 0;
+    bundle_encode(bund, &encoded_bund, &nbytes);
+
+    // TODO : implement
+    preference_set_string(jobinfo_key.c_str(), encoded_bund);
+    free(encoded_bund);
+}
+
+std::string JobScheduler::GetJobInfoKey(const std::string& job_name) {
+    return kTaskInfoPreferencePrefix + job_name;
+}
