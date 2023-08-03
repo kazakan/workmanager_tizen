@@ -5,6 +5,7 @@
 #include <app_manager.h>
 #include <app_preference.h>
 #include <bundle.h>
+#include <device/battery.h>
 #include <flutter/encodable_value.h>
 #include <flutter/method_channel.h>
 #include <flutter/plugin_registrar.h>
@@ -533,6 +534,28 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
                     *frequency_seconds / 60, tag, payload, &callback);
 
             } else {
+                if (constraints->battery_not_low) {
+                    device_battery_level_e level;
+                    device_battery_get_level_status(&level);
+
+                    switch (level) {
+                        case DEVICE_BATTERY_LEVEL_LOW:
+                        case DEVICE_BATTERY_LEVEL_CRITICAL:
+                        case DEVICE_BATTERY_LEVEL_EMPTY:
+                            return;
+                    }
+                }
+
+                if (constraints->charging) {
+                    bool charging = false;
+                    device_battery_is_charging(&charging);
+                    if (!charging) {
+                        return;
+                    }
+                }
+
+                // implement more if possible
+
                 RunBackgroundCallback(unique_name, payload);
             }
 
