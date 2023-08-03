@@ -42,8 +42,7 @@ class JobScheduler {
     void CancelAll();
 
     job_service_h SetCallback(const char* job_name,
-                              job_service_callback_s* callback,
-                              void* user_data);
+                              job_service_callback_s* callback);
 
     std::vector<std::string> GetAllJobs();
 

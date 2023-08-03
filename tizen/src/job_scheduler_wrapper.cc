@@ -13,19 +13,23 @@ JobScheduler::JobScheduler() { job_scheduler_init(); }
 
 int JobScheduler::SetJobConstraints(job_info_h job_info,
                                     const Constraints& constraints) {
-    int ret = job_info_set_requires_battery_not_low(
-        job_info, constraints.battery_not_low);
-    if (ret != JOB_ERROR_NONE) {
-        LOG_ERROR("Failed to set job info battery_not_low: %s",
-                  get_error_message(ret));
-        return ret;
+    int ret = JOB_ERROR_NONE;
+    if (constraints.battery_not_low) {
+        ret = job_info_set_requires_battery_not_low(job_info, true);
+        if (ret != JOB_ERROR_NONE) {
+            LOG_ERROR("Failed to set job info battery_not_low: %s",
+                      get_error_message(ret));
+            return ret;
+        }
     }
 
-    ret = job_info_set_requires_charging(job_info, constraints.charging);
-    if (ret != JOB_ERROR_NONE) {
-        LOG_ERROR("Failed to set job info charging: %s",
-                  get_error_message(ret));
-        return ret;
+    if (constraints.charging) {
+        ret = job_info_set_requires_charging(job_info, true);
+        if (ret != JOB_ERROR_NONE) {
+            LOG_ERROR("Failed to set job info charging: %s",
+                      get_error_message(ret));
+            return ret;
+        }
     }
 
     switch (constraints.network_type) {
@@ -109,6 +113,10 @@ void JobScheduler::RegisterJob(
                                   get_error_message(ret));
                     } else {
                         SavePayload(unique_name, payload);
+                        if (!callback) {
+                            break;
+                        }
+                        SetCallback(unique_name.c_str(), callback);
                     }
                     break;
                 default:
@@ -120,10 +128,9 @@ void JobScheduler::RegisterJob(
         }
     } else {
         SavePayload(unique_name, payload);
-    }
-
-    if (callback) {
-        SetCallback(unique_name.c_str(), callback, nullptr);
+        if (callback) {
+            SetCallback(unique_name.c_str(), callback);
+        }
     }
 
     job_info_destroy(job_info);
@@ -154,8 +161,7 @@ void JobScheduler::CancelAll() {
 }
 
 job_service_h JobScheduler::SetCallback(const char* job_name,
-                                        job_service_callback_s* callback,
-                                        void* user_data) {
+                                        job_service_callback_s* callback) {
     job_service_h service = nullptr;
     int ret = job_scheduler_service_add(job_name, callback, nullptr, &service);
     if (ret != JOB_ERROR_NONE) {
