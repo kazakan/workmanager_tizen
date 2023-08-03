@@ -169,7 +169,13 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
                                                StopJobCallback};
             for (const auto &name : job_names) {
                 LOG_DEBUG("%s", name.c_str());
-                scheduler.SetCallback(name.c_str(), &callback);
+                auto info = scheduler.LoadJobInfo(name);
+                if (!info.has_value()) {
+                    continue;
+                }
+                scheduler.CancelByUniqueName(name);
+                scheduler.RegisterJob(info.value(), &callback);
+                // scheduler.SetCallback(name.c_str(), &callback);
             }
 
         } else {

@@ -12,6 +12,7 @@
 
 extern const char* kPayloadPreferencePrefix;
 extern const char* kTaskInfoPreferencePrefix;
+extern const char* kTaskInfoPreferenceSizePrefix;
 
 class JobScheduler {
    public:
@@ -39,6 +40,8 @@ class JobScheduler {
                               job_service_callback_s* callback);
 
     std::vector<std::string> GetAllJobs();
+    
+    std::optional<JobInfo> LoadJobInfo(const std::string& job_name);
 
    private:
     std::unordered_map<std::string, job_service_h> job_service_handles_;
