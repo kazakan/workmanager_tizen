@@ -8,6 +8,7 @@
 #include "options.h"
 
 const char* kPayloadPreferencePrefix = "WmPayload_";
+const char* kTaskInfoPreferencePrefix = "WmTaskInfo_";
 
 JobScheduler::JobScheduler() { job_scheduler_init(); }
 
@@ -43,97 +44,92 @@ int JobScheduler::SetJobConstraints(job_info_h job_info,
             }
             break;
     }
-
     return ret;
 }
 
-void JobScheduler::RegisterJob(
-    const bool is_debug_mode, const std::string& unique_name,
-    const std::string& task_name, const ExistingWorkPolicy existing_work_policy,
-    const int32_t initial_delay_seconds, const Constraints& constraints_config,
-    const BackoffPolicyTaskConfig& backoff_policy_config,
-    const OutOfQuotaPolicy& out_of_quota_policy, const bool isPeriodic,
-    const int32_t frequency_minutes, const std::string& tag,
-    const std::string& payload, job_service_callback_s* callback) {
-    job_info_h job_info;
-    int ret = job_info_create(&job_info);
+void JobScheduler::RegisterJob(const JobInfo& job_info,
+                               job_service_callback_s* callback) {
+    job_info_h job_handle;
+    int ret = job_info_create(&job_handle);
     if (ret != JOB_ERROR_NONE) {
         LOG_ERROR("Failed to create job info: %s", get_error_message(ret));
         return;
     }
 
-    ret = SetJobConstraints(job_info, constraints_config);
+    ret = SetJobConstraints(job_handle, job_info.constraints);
     if (ret != JOB_ERROR_NONE) {
-        job_info_destroy(job_info);
+        job_info_destroy(job_handle);
         return;
     }
 
-    if (isPeriodic) {
-        ret = job_info_set_periodic(job_info, frequency_minutes);
+    if (job_info.is_periodic) {
+        ret =
+            job_info_set_periodic(job_handle, job_info.frequency_seconds / 60);
         if (ret != JOB_ERROR_NONE) {
             LOG_ERROR("Failed to set job info periodic: %s",
                       get_error_message(ret));
-            job_info_destroy(job_info);
+            job_info_destroy(job_handle);
             return;
         }
-        ret = job_info_set_persistent(job_info, true);
+        ret = job_info_set_persistent(job_handle, true);
         if (ret != JOB_ERROR_NONE) {
             LOG_ERROR("Failed to set job info persistent: %s",
                       get_error_message(ret));
-            job_info_destroy(job_info);
+            job_info_destroy(job_handle);
             return;
         }
     } else {
-        ret = job_info_set_once(job_info, true);
+        ret = job_info_set_once(job_handle, true);
         if (ret != JOB_ERROR_NONE) {
             LOG_ERROR("Failed to set job info once: %s",
                       get_error_message(ret));
-            job_info_destroy(job_info);
+            job_info_destroy(job_handle);
             return;
         }
-        ret = job_info_set_persistent(job_info, false);
+        ret = job_info_set_persistent(job_handle, false);
         if (ret != JOB_ERROR_NONE) {
             LOG_ERROR("Failed to set job non-persistent: %s",
                       get_error_message(ret));
-            job_info_destroy(job_info);
+            job_info_destroy(job_handle);
             return;
         }
     }
 
-    ret = job_scheduler_schedule(job_info, unique_name.c_str());
+    ret = job_scheduler_schedule(job_handle, job_info.unique_name.c_str());
     if (ret != JOB_ERROR_NONE) {
         if (ret == JOB_ERROR_ALREADY_EXIST) {
-            switch (existing_work_policy) {
+            switch (job_info.existing_work_policy) {
                 case ExistingWorkPolicy::kReplace:
                 case ExistingWorkPolicy::kUpdate:
-                    CancelByUniqueName(unique_name);
-                    ret = job_scheduler_schedule(job_info, unique_name.c_str());
+                    CancelByUniqueName(job_info.unique_name);
+                    ret = job_scheduler_schedule(job_handle,
+                                                 job_info.unique_name.c_str());
                     if (ret != JOB_ERROR_NONE) {
                         LOG_ERROR("Failed to schedule job: %s",
                                   get_error_message(ret));
                     } else {
-                        SavePayload(unique_name, payload);
+                        SavePayload(job_info.unique_name, job_info.payload);
                         if (!callback) {
                             break;
                         }
-                        SetCallback(unique_name.c_str(), callback);
+                        SetCallback(job_info.unique_name.c_str(), callback);
                     }
                     break;
                 default:
                     LOG_INFO("Job already exists but ignored. Job name: %s",
-                             unique_name.c_str());
+                             job_info.unique_name.c_str());
             }
         } else {
             LOG_ERROR("Failed to schedule job: %s", get_error_message(ret));
         }
     } else {
-        SavePayload(unique_name, payload);
+        SavePayload(job_info.unique_name, job_info.payload);
         if (callback) {
-            SetCallback(unique_name.c_str(), callback);
+            SetCallback(job_info.unique_name.c_str(), callback);
         }
     }
 
-    job_info_destroy(job_info);
+    job_info_destroy(job_handle);
 }
 
 void JobScheduler::CancelByTag(const std::string& task) {

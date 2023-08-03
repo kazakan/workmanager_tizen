@@ -7,9 +7,11 @@
 #include <unordered_map>
 #include <vector>
 
+#include "job.h"
 #include "options.h"
 
 extern const char* kPayloadPreferencePrefix;
+extern const char* kTaskInfoPreferencePrefix;
 
 class JobScheduler {
    public:
@@ -21,19 +23,10 @@ class JobScheduler {
         return instance;
     }
 
-    int SetJobConstraints(job_info_h job_info, const Constraints& constraints);
+    int SetJobConstraints(job_info_h job_handle,
+                          const Constraints& constraints);
 
-    void RegisterJob(const bool is_debug_mode, const std::string& unique_name,
-                     const std::string& task_name,
-                     const ExistingWorkPolicy existing_work_policy,
-                     const int32_t initial_delay_seconds,
-                     const Constraints& constraints_config,
-                     const BackoffPolicyTaskConfig& backoff_policy_config,
-                     const OutOfQuotaPolicy& out_of_quota_policy,
-                     const bool isPeriodic = false,
-                     const int32_t frequency_seconds = 0,
-                     const std::string& tag = "",
-                     const std::string& payload = "",
+    void RegisterJob(const JobInfo& job_info,
                      job_service_callback_s* callback = nullptr);
 
     void CancelByTag(const std::string& task);
