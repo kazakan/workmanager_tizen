@@ -189,6 +189,15 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
                 "." + kEventName;
             event_add_event_handler(event_id.c_str(), TaskInfoCallback, nullptr,
                                     &handler);
+
+            auto &scheduler = JobScheduler::instance();
+            auto job_names = scheduler.GetAllJobs();
+            job_service_callback_s callback = {StartJobCallback,
+                                               StopJobCallback};
+            for (const auto &name : job_names) {
+                scheduler.SetCallback(name.c_str(), &callback);
+            }
+
         } else {
             auto foreground_channel = std::make_unique<FlMethodChannel>(
                 registrar->messenger(), kForegroundChannelName,
@@ -211,6 +220,7 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
    private:
     static std::optional<std::unique_ptr<FlMethodChannel>> background_channel_;
     static bool is_service_app_;
+    static job_service_callback_s callback_;
 
     void HandleWorkmanagerCall(const FlMethodCall &call,
                                std::unique_ptr<FlMethodResult> result) {
