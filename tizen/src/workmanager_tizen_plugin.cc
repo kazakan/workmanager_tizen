@@ -461,7 +461,7 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
     static std::optional<std::string> GetAppId() {
         char *app_id;
         int ret = app_manager_get_app_id(getpid(), &app_id);
-        if (ret == 0) {
+        if (ret == APP_MANAGER_ERROR_NONE) {
             return std::string(app_id);
         }
 
