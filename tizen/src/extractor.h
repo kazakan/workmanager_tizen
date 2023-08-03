@@ -135,15 +135,13 @@ NetworkType ExtractNetworkTypeFromMap(const flutter::EncodableMap &args) {
 Constraints ExtractConstraintConfigFromMap(const flutter::EncodableMap &map) {
     NetworkType network_type = ExtractNetworkTypeFromMap(map);
     bool battery_not_low =
-        GetOrNullFromEncodableMap<bool>(&map, kBatteryNotLow)
-            .value_or(false);
+        GetOrNullFromEncodableMap<bool>(&map, kBatteryNotLow).value_or(false);
     bool charging =
         GetOrNullFromEncodableMap<bool>(&map, kCharging).value_or(false);
     bool device_idle =
         GetOrNullFromEncodableMap<bool>(&map, kDeviceidle).value_or(false);
     bool storage_not_low =
-        GetOrNullFromEncodableMap<bool>(&map, kStorageNotLow)
-            .value_or(false);
+        GetOrNullFromEncodableMap<bool>(&map, kStorageNotLow).value_or(false);
 
     return Constraints(network_type, battery_not_low, charging,
                        storage_not_low);

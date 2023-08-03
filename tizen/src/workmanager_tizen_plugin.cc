@@ -107,7 +107,7 @@ void SendTerminateRequestBgApp(const char *service_id) {
 bool CheckAppIsRunning(const char *app_id) {
     app_context_h context;
     int ret = app_manager_get_app_context(app_id, &context);
-    if(ret == APP_MANAGER_ERROR_NO_SUCH_APP){
+    if (ret == APP_MANAGER_ERROR_NO_SUCH_APP) {
         return false;
     }
 
@@ -256,8 +256,8 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
         if (method_name == kInitialize) {
             bool isDebugMode =
                 std::get<bool>(map[flutter::EncodableValue(kIsInDebugMode)]);
-            int64_t handle =
-                std::get<int64_t>(map[flutter::EncodableValue(kCallbackhandle)]);
+            int64_t handle = std::get<int64_t>(
+                map[flutter::EncodableValue(kCallbackhandle)]);
 
             preference_set_int(kDispatcherHandle, handle);
 
@@ -274,16 +274,15 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
                 std::get<bool>(map[flutter::EncodableValue(kIsInDebugMode)]);
             std::string unique_name = std::get<std::string>(
                 map[flutter::EncodableValue(kUniquename)]);
-            std::string task_name = std::get<std::string>(
-                map[flutter::EncodableValue(kNameValue)]);
+            std::string task_name =
+                std::get<std::string>(map[flutter::EncodableValue(kNameValue)]);
             std::string tag =
-                GetOrNullFromEncodableMap<std::string>(&map, kTag)
-                    .value_or("");
+                GetOrNullFromEncodableMap<std::string>(&map, kTag).value_or("");
             ExistingWorkPolicy existing_work_policy =
                 ExtractExistingWorkPolicyFromMap(map);
-            int32_t initial_delay_seconds = GetOrNullFromEncodableMap<int32_t>(
-                                                &map, kInitialDelaySeconds)
-                                                .value_or(0);
+            int32_t initial_delay_seconds =
+                GetOrNullFromEncodableMap<int32_t>(&map, kInitialDelaySeconds)
+                    .value_or(0);
             int32_t frequency_seconds =
                 GetOrNullFromEncodableMap<int32_t>(&map, kFrequencySeconds)
                     .value_or(0);
@@ -308,16 +307,15 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
 
             bundle_add_str(bund, kMethodNameKey, method_name.c_str());
 
-            bundle_add_byte(bund, kIsInDebugMode, &is_debug_mode,
-                            sizeof(bool));
+            bundle_add_byte(bund, kIsInDebugMode, &is_debug_mode, sizeof(bool));
             bundle_add_str(bund, kUniquename, unique_name.c_str());
             bundle_add_str(bund, kNameValue, task_name.c_str());
             bundle_add_str(bund, kTag, tag.c_str());
             bundle_add_byte(bund, kExistingWorkpolicy, &existing_work_policy,
                             sizeof(ExistingWorkPolicy));
 
-            bundle_add_byte(bund, kInitialDelaySeconds,
-                            &initial_delay_seconds, sizeof(int32_t));
+            bundle_add_byte(bund, kInitialDelaySeconds, &initial_delay_seconds,
+                            sizeof(int32_t));
             bundle_add_byte(bund, kFrequencySeconds, &frequency_seconds,
                             sizeof(int32_t));
 
@@ -325,8 +323,7 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
 
             bundle_add_byte(bund, kConstraintsBundle, &constraints_config,
                             sizeof(Constraints));
-            bundle_add_byte(bund, kBackOffPolicyBundle,
-                            &backoff_policy_config,
+            bundle_add_byte(bund, kBackOffPolicyBundle, &backoff_policy_config,
                             sizeof(BackoffPolicyTaskConfig));
             bundle_add_byte(bund, kOutofQuotaPolicy, &out_of_quota_policy,
                             sizeof(OutOfQuotaPolicy));
@@ -448,7 +445,7 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
     }
 
     static void StopJobCallback(job_info_h job_info, void *user_data) {
-        // Currently do nothing.
+        // Empty
     }
 
     static std::optional<std::string> GetAppId() {
@@ -490,8 +487,8 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
             BackoffPolicyTaskConfig *backoff_policy = nullptr;
             OutOfQuotaPolicy *out_of_quota_policy = nullptr;
 
-            bundle_get_byte(event_data, kIsInDebugMode,
-                            (void **)&is_debug_mode, &size);
+            bundle_get_byte(event_data, kIsInDebugMode, (void **)&is_debug_mode,
+                            &size);
             bundle_get_str(event_data, kUniquename, &unique_name);
             bundle_get_str(event_data, kNameValue, &task_name);
             bundle_get_str(event_data, kTag, &tag);
@@ -516,33 +513,14 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
                             &size);
 
             if (*is_periodic) {
-                // job_info_h handler;
-                // job_info_create(&handler);
-                // job_info_set_periodic(handler, *frequency_seconds / 60);
-                // job_info_set_persistent(handler, true);
-                // job_scheduler_schedule(handler, unique_name);
-
-                // std::string preference_key =
-                //     kPayloadPreferencePrefix + std::string(unique_name);
-                // preference_set_string(preference_key.c_str(), payload);
-
-                // job_service_callback_s callback = {StartJobCallback,
-                //                                    StopJobCallback};
-
-                // job_service_h service;
-                // job_scheduler_service_add(unique_name, &callback, nullptr,
-                //                           &service);
-
                 job_service_callback_s callback = {StartJobCallback,
                                                    StopJobCallback};
 
                 job_scheduler.RegisterJob(
                     *is_debug_mode, unique_name, task_name,
-                    *existing_work_policy, *initial_delay_seconds,
-                    *constraints, *backoff_policy, *out_of_quota_policy,
-                    *is_periodic, *frequency_seconds / 60, tag, payload,&callback);
-
-               
+                    *existing_work_policy, *initial_delay_seconds, *constraints,
+                    *backoff_policy, *out_of_quota_policy, *is_periodic,
+                    *frequency_seconds / 60, tag, payload, &callback);
 
             } else {
                 RunBackgroundCallback(unique_name, payload);
