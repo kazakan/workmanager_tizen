@@ -155,7 +155,7 @@ void JobScheduler::CancelAll() {
 
     job_scheduler_cancel_all();
 
-    for (const auto name : job_names) {
+    for (const auto& name : job_names) {
         preference_remove(GetPayloadKey(name).c_str());
     }
 }
