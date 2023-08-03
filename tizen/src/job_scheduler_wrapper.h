@@ -4,6 +4,7 @@
 #include <job_scheduler.h>
 
 #include <memory>
+#include <unordered_map>
 #include <vector>
 
 #include "options.h"
@@ -47,6 +48,8 @@ class JobScheduler {
     std::vector<std::string> GetAllJobs();
 
    private:
+    std::unordered_map<std::string, job_service_h> job_service_handles_;
+
     JobScheduler();
     ~JobScheduler() = default;
 

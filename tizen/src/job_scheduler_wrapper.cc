@@ -148,6 +148,9 @@ void JobScheduler::CancelByUniqueName(const std::string& name) {
         return;
     }
     preference_remove(GetPayloadKey(name).c_str());
+
+    job_scheduler_service_remove(job_service_handles_[name]);
+    job_service_handles_.erase(name);
 }
 
 void JobScheduler::CancelAll() {
@@ -158,6 +161,11 @@ void JobScheduler::CancelAll() {
     for (const auto& name : job_names) {
         preference_remove(GetPayloadKey(name).c_str());
     }
+
+    for (const auto& items : job_service_handles_) {
+        job_scheduler_service_remove(items.second);
+    }
+    job_service_handles_.clear();
 }
 
 job_service_h JobScheduler::SetCallback(const char* job_name,
@@ -168,6 +176,12 @@ job_service_h JobScheduler::SetCallback(const char* job_name,
         LOG_ERROR("Failed to add service to job: %s", get_error_message(ret));
         return nullptr;
     }
+
+    if (job_service_handles_.count(job_name)) {
+        job_scheduler_service_remove(job_service_handles_[job_name]);
+    }
+
+    job_service_handles_[job_name] = service;
     return service;
 }
 
