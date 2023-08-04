@@ -175,7 +175,6 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
                 }
                 scheduler.CancelByUniqueName(name);
                 scheduler.RegisterJob(info.value(), &callback);
-                // scheduler.SetCallback(name.c_str(), &callback);
             }
 
         } else {
@@ -235,7 +234,6 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
             return;
         }
 
-        // TODO : Unify error codes with a constant
         if (!std::holds_alternative<flutter::EncodableMap>(arguments)) {
             result->Error(kInvalidArg, "No argument provided");
             return;
