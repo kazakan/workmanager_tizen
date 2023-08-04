@@ -200,6 +200,7 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
     static std::optional<std::unique_ptr<FlMethodChannel>> background_channel_;
     static bool is_service_app_;
     static job_service_callback_s callback_;
+    static bool is_background_initialized_; // Only in service app
 
     void HandleWorkmanagerCall(const FlMethodCall &call,
                                std::unique_ptr<FlMethodResult> result) {
@@ -377,7 +378,7 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
     void HandleBackground(const FlMethodCall &call,
                           std::unique_ptr<FlMethodResult> result) {
         if (call.method_name() == kBackgroundChannelInitialized) {
-            // check initialized
+            is_background_initialized_ = true;
         }
 
         result->Success();
@@ -497,6 +498,7 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
 std::optional<std::unique_ptr<FlMethodChannel>>
     WorkmanagerTizenPlugin::background_channel_ = std::nullopt;
 bool WorkmanagerTizenPlugin::is_service_app_ = false;
+bool WorkmanagerTizenPlugin::is_background_initialized_ = false;
 
 }  // namespace
 
