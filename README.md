@@ -11,7 +11,7 @@ The Tizen implementation of [`workmanager`](https://pub.dev/packages/workmanager
  ```yaml
 dependencies:
   workmanager: ^0.5.1
-  workmanager_tizen: ^0.0.1
+  workmanager_tizen: ^0.1.0
 ```
 
 Then you can import `workmanager` in your Dart code:
