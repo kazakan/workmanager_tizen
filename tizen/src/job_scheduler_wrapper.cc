@@ -110,7 +110,7 @@ void JobScheduler::RegisterJob(const JobInfo& job_info,
                                   get_error_message(ret));
                     } else {
                         SavePayload(job_info.unique_name, job_info.payload);
-                        SaveJobInfo(job_info.unique_name, job_info);
+                        SaveJobInfo(job_info);
                         if (!callback) {
                             break;
                         }
@@ -126,7 +126,7 @@ void JobScheduler::RegisterJob(const JobInfo& job_info,
         }
     } else {
         SavePayload(job_info.unique_name, job_info.payload);
-        SaveJobInfo(job_info.unique_name, job_info);
+        SaveJobInfo(job_info);
         if (callback) {
             SetCallback(job_info.unique_name.c_str(), callback);
         }
@@ -189,7 +189,7 @@ std::vector<std::string> JobScheduler::GetAllJobs() {
 
     int code = job_scheduler_foreach_job(
         [](job_info_h job_info, void* user_data) {
-            char* job_id = NULL;
+            char* job_id = nullptr;
             auto vec = static_cast<std::vector<std::string>*>(user_data);
 
             job_info_get_job_id(job_info, &job_id);
@@ -211,23 +211,24 @@ std::string JobScheduler::GetPayloadKey(const std::string& job_name) {
     return kPayloadPreferencePrefix + job_name;
 }
 
-void JobScheduler::SaveJobInfo(const std::string& job_name, JobInfo job_info) {
-    const std::string jobinfo_key = GetJobInfoKey(job_name).c_str();
+void JobScheduler::SaveJobInfo(const JobInfo& job_info) {
+    const std::string jobinfo_key = GetJobInfoKey(job_info.unique_name);
+    const std::string jobinfo_size_key =
+        kTaskInfoPreferenceSizePrefix + job_info.unique_name;
+    bundle_raw* encoded_bund;
+    int32_t size = 0;
+
     bundle* bund = bundle_create();
     AddJobInfoToBundle(bund, job_info);
-    bundle_raw* encoded_bund;
-    int32_t nbytes = 0;
-    bundle_encode(bund, &encoded_bund, &nbytes);
+    bundle_encode(bund, &encoded_bund, &size);
 
     preference_set_string(jobinfo_key.c_str(), (char*)encoded_bund);
-    preference_set_int((kTaskInfoPreferenceSizePrefix + job_name).c_str(),
-                       nbytes);
+    preference_set_int(jobinfo_size_key.c_str(), size);
     free(encoded_bund);
 }
 
 std::optional<JobInfo> JobScheduler::LoadJobInfo(const std::string& job_name) {
     const std::string jobinfo_key = GetJobInfoKey(job_name);
-
     char* base64;
     int32_t size;
 

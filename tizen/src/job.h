@@ -72,7 +72,7 @@ struct JobInfo {
     bool is_periodic;
 };
 
-bundle *AddJobInfoToBundle(bundle *bund, JobInfo &job_info);
+void AddJobInfoToBundle(bundle *bund, const JobInfo &job_info);
 JobInfo GetFromBundle(bundle *bund);
 
 #endif  // FLUTTER_PLUGIN_WORKMANAGER_JOB_INFO_H_

@@ -37,7 +37,7 @@ const char *kBackOffPolicyBundle = "backoffPolicyBundle";
 const char *kPayload = "inputData";
 const char *kIsPeriodic = "isPeriodic";
 
-bundle *AddJobInfoToBundle(bundle *bund, JobInfo &job_info) {
+void AddJobInfoToBundle(bundle *bund, const JobInfo &job_info) {
     bundle_add_byte(bund, kIsInDebugMode, &job_info.is_debug_mode,
                     sizeof(bool));
     bundle_add_str(bund, kUniquename, job_info.unique_name.c_str());
@@ -60,8 +60,6 @@ bundle *AddJobInfoToBundle(bundle *bund, JobInfo &job_info) {
     bundle_add_byte(bund, kOutofQuotaPolicy, &job_info.out_of_quota_policy,
                     sizeof(OutOfQuotaPolicy));
     bundle_add_byte(bund, kIsPeriodic, &job_info.is_periodic, sizeof(bool));
-
-    return bund;
 }
 
 JobInfo GetFromBundle(bundle *bund) {
