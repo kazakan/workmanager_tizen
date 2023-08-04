@@ -16,7 +16,7 @@ const simpleTaskKey = "be.tramckrijte.workmanagerExample.simpleTask";
 const rescheduledTaskKey = "be.tramckrijte.workmanagerExample.rescheduledTask";
 const failedTaskKey = "be.tramckrijte.workmanagerExample.failedTask";
 const simpleDelayedTask = "be.tramckrijte.workmanagerExample.simpleDelayedTask";
-const simplePeriodicTask = "simplePeriodicTask";
+const simplePeriodicTask = "be.tramckrijte.workmanagerExample.simplePeriodicTask";
 const simplePeriodic1HourTask =
     "be.tramckrijte.workmanagerExample.simplePeriodic1HourTask";
 const logTag = "WorkmanagerTizenPlugin";
@@ -55,7 +55,7 @@ void callbackDispatcher() {
             "$simplePeriodicTask was executed : ${DateFormat('HH:mm').format(DateTime.now())}");
         break;
       case simplePeriodic1HourTask:
-        Log.debug(logTag, "$simplePeriodic1HourTask was executed");
+        Log.debug(logTag, "$simplePeriodic1HourTask was executed : ${DateFormat('HH:mm').format(DateTime.now())}");
         break;
       case Workmanager.iOSBackgroundTask:
         Log.debug(logTag, "The iOS background fetch was triggered");
