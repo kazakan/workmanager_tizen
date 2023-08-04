@@ -1,13 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest package="com.example.example" version="1.0.0" api-version="4.0" xmlns="http://tizen.org/ns/packages">
+<manifest package="org.tizen.flutter_workmanager_tizen_example" version="1.0.0" api-version="4.0" xmlns="http://tizen.org/ns/packages">
     <profile name="common"/>
-    <ui-application appid="com.example.example" exec="runner" type="capp" multiple="false" nodisplay="false" taskmanage="true" hw-acceleration="on">
-        <label>example</label>
+    <ui-application appid="org.tizen.flutter_workmanager_tizen_example" exec="runner" type="capp" multiple="false" nodisplay="false" taskmanage="true" hw-acceleration="on">
+        <label>workmanager_tizen_example</label>
         <icon>ic_launcher.png</icon>
     </ui-application>
     <privileges>
         <privilege>http://tizen.org/privilege/appmanager.launch</privilege>
-        <privilege>http://tizen.org/privilege/appmanager.kill.bgapp</privilege>
     </privileges>
     <feature name="http://tizen.org/feature/screen.size.all"/>
 </manifest>

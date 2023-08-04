@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest package="com.example.example" version="1.0.0" api-version="4.0" xmlns="http://tizen.org/ns/packages">
+<manifest package="org.tizen.flutter_workmanager_tizen_example" version="1.0.0" api-version="4.0" xmlns="http://tizen.org/ns/packages">
     <profile name="common"/>
-    <service-application appid="com.example.example_service" exec="runner_service" type="capp" multiple="false" nodisplay="true" taskmanage="false" auto-restart="false">
-        <label>example</label>
+    <service-application appid="org.tizen.flutter_workmanager_tizen_example_service" exec="runner_service" type="capp" multiple="false" nodisplay="true" taskmanage="false" auto-restart="false">
+        <label>workmanager_tizen_example_service</label>
         <icon>ic_launcher.png</icon>
         <background-category value="media"/>
-        
     </service-application>
     <privileges>
             <privilege>http://tizen.org/privilege/appmanager.launch</privilege>
