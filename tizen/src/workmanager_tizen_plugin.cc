@@ -59,24 +59,6 @@ const char *kEventName = "pass_taskinfo_event";
 const char *kInvalidArg = "Invalid argument";
 const char *kOperationFailed = "Operation failed/cancelled";
 
-void SendTerminateRequestBgApp(const char *service_id) {
-    app_context_h context;
-    int ret = app_manager_get_app_context(service_id, &context);
-    if (ret != APP_MANAGER_ERROR_NONE) {
-        LOG_ERROR("%s", get_error_message(ret));
-    }
-
-    ret = app_manager_request_terminate_bg_app(context);
-    if (ret != APP_MANAGER_ERROR_NONE) {
-        LOG_ERROR("%s", get_error_message(ret));
-    }
-
-    ret = app_context_destroy(context);
-    if (ret != APP_MANAGER_ERROR_NONE) {
-        LOG_ERROR("%s", get_error_message(ret));
-    }
-}
-
 bool CheckAppIsRunning(const char *app_id) {
     app_context_h context;
     int ret = app_manager_get_app_context(app_id, &context);
@@ -200,7 +182,7 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
     static std::optional<std::unique_ptr<FlMethodChannel>> background_channel_;
     static bool is_service_app_;
     static job_service_callback_s callback_;
-    static bool is_background_initialized_; // Only in service app
+    static bool is_background_initialized_;  // Only in service app
 
     void HandleWorkmanagerCall(const FlMethodCall &call,
                                std::unique_ptr<FlMethodResult> result) {
@@ -483,7 +465,7 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
         } else if (method_name_str == kCancelTaskByUniqueName) {
             char *unique_name;
             int ret = bundle_get_str(event_data, kUniquename, &unique_name);
-            if(ret != BUNDLE_ERROR_NONE){
+            if (ret != BUNDLE_ERROR_NONE) {
                 return;
             }
 
