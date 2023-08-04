@@ -7,10 +7,6 @@
 #include "log.h"
 #include "options.h"
 
-const char* kPayloadPreferencePrefix = "WmPayload_";
-const char* kTaskInfoPreferencePrefix = "WmTaskInfo_";
-const char* kTaskInfoPreferenceSizePrefix = "WmTaskInfoSize_";
-
 JobScheduler::JobScheduler() { job_scheduler_init(); }
 
 int JobScheduler::SetJobConstraints(job_info_h job_info,

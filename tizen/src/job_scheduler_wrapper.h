@@ -10,9 +10,9 @@
 #include "job.h"
 #include "options.h"
 
-extern const char* kPayloadPreferencePrefix;
-extern const char* kTaskInfoPreferencePrefix;
-extern const char* kTaskInfoPreferenceSizePrefix;
+constexpr char* kPayloadPreferencePrefix = "WmPayload_";
+constexpr char* kTaskInfoPreferencePrefix = "WmTaskInfo_";
+constexpr char* kTaskInfoPreferenceSizePrefix = "WmTaskInfoSize_";
 
 class JobScheduler {
    public:
@@ -40,7 +40,7 @@ class JobScheduler {
                               job_service_callback_s* callback);
 
     std::vector<std::string> GetAllJobs();
-    
+
     std::optional<JobInfo> LoadJobInfo(const std::string& job_name);
 
    private:

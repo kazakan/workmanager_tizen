@@ -11,39 +11,40 @@
 
 typedef flutter::MethodCall<flutter::EncodableValue> FlMethodCall;
 
-extern const char *kInitialDelaySeconds;
-extern const char *kBackOffPolicyType;
-extern const char *kBackOffPolicyDelayMillis;
-extern const char *kOutofQuotaPolicy;
-extern const char *kExistingWorkpolicy;
+constexpr char *kInitialDelaySeconds = "initialDelaySeconds";
+constexpr char *kBackOffPolicyType = "backoffPolicyType";
+constexpr char *kBackOffPolicyDelayMillis = "backoffDelayInMilliseconds";
+constexpr char *kOutofQuotaPolicy = "outOfQuotaPolicy";
+constexpr char *kExistingWorkpolicy = "existingWorkPolicy";
 
-extern const char *kNetworkType;
-extern const char *kBatteryNotLow;
-extern const char *kCharging;
-extern const char *kDeviceidle;
-extern const char *kStorageNotLow;
+constexpr char *kNetworkType = "networkType";
+constexpr char *kBatteryNotLow = "requiresBatteryNotLow";
+constexpr char *kCharging = "requiresCharging";
+constexpr char *kDeviceidle = "requiresDeviceIdle";
+constexpr char *kStorageNotLow = "requiresStorageNotLow";
 
 // NetworkType
-extern const char *kConnected;
-extern const char *kMetered;
-extern const char *kNotRequired;
-extern const char *kNotRoaming;
-extern const char *kUnmetered;
-extern const char *kTemporarilyUnmetered;
+constexpr char *kConnected = "connectd";
+constexpr char *kMetered = "metered";
+constexpr char *kNotRequired = "not_required";
+constexpr char *kNotRoaming = "not_roaming";
+constexpr char *kUnmetered = "unmetered";
+constexpr char *kTemporarilyUnmetered = "temporarily_unmetered";
 
 // ExistingWorkPolicy
-extern const char *kReplace;
-extern const char *kKeep;
-extern const char *kAppend;
-extern const char *kUpdate;
+constexpr char *kReplace = "replace";
+constexpr char *kKeep = "keep";
+constexpr char *kAppend = "append";
+constexpr char *kUpdate = "update";
 
 // BackOffPolicy
-extern const char *kExponential;
-extern const char *kLinear;
+constexpr char *kExponential = "exponential";
+constexpr char *kLinear = "linear";
 
 // OutofQuotaPolicy
-extern const char *kRunAsNonExpectedWorkRequest;
-extern const char *kDropWorkRequest;
+constexpr char *kRunAsNonExpectedWorkRequest =
+    "run_as_non_expedited_work_request";
+constexpr char *kDropWorkRequest = "drop_work_request";
 
 ExistingWorkPolicy StringToExistingWorkPolicy(const std::string &str);
 

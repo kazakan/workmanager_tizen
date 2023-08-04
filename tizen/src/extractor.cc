@@ -8,41 +8,6 @@
 #include "options.h"
 #include "utils.h"
 
-typedef flutter::MethodCall<flutter::EncodableValue> FlMethodCall;
-
-const char *kInitialDelaySeconds = "initialDelaySeconds";
-const char *kBackOffPolicyType = "backoffPolicyType";
-const char *kBackOffPolicyDelayMillis = "backoffDelayInMilliseconds";
-const char *kOutofQuotaPolicy = "outOfQuotaPolicy";
-const char *kExistingWorkpolicy = "existingWorkPolicy";
-
-const char *kNetworkType = "networkType";
-const char *kBatteryNotLow = "requiresBatteryNotLow";
-const char *kCharging = "requiresCharging";
-const char *kDeviceidle = "requiresDeviceIdle";
-const char *kStorageNotLow = "requiresStorageNotLow";
-
-// NetworkType
-const char *kConnected = "connectd";
-const char *kMetered = "metered";
-const char *kNotRequired = "not_required";
-const char *kNotRoaming = "not_roaming";
-const char *kUnmetered = "unmetered";
-const char *kTemporarilyUnmetered = "temporarily_unmetered";
-
-// ExistingWorkPolicy
-const char *kReplace = "replace";
-const char *kKeep = "keep";
-const char *kAppend = "append";
-const char *kUpdate = "update";
-
-// BackOffPolicy
-const char *kExponential = "exponential";
-const char *kLinear = "linear";
-
-// OutofQuotaPolicy
-const char *kRunAsNonExpectedWorkRequest = "run_as_non_expedited_work_request";
-const char *kDropWorkRequest = "drop_work_request";
 
 ExistingWorkPolicy StringToExistingWorkPolicy(const std::string &str) {
     if (str == kReplace) {

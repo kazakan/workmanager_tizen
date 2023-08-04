@@ -10,33 +10,33 @@
 #include "log.h"
 #include "options.h"
 
-extern const char *kMethodNameKey;
-extern const char *kInitialize;
-extern const char *kRegisterOneOffTask;
-extern const char *kRegisterPeriodicTask;
-extern const char *kCancelTaskByUniqueName;
-extern const char *kCancelTaskByTag;
-extern const char *kCancelAllTasks;
-extern const char *kUnknown;
+constexpr char *kMethodNameKey = "methodName";
+constexpr char *kInitialize = "initialize";
+constexpr char *kRegisterOneOffTask = "registerOneOffTask";
+constexpr char *kRegisterPeriodicTask = "registerPeriodicTask";
+constexpr char *kCancelTaskByUniqueName = "cancelTaskByUniqueName";
+constexpr char *kCancelTaskByTag = "cancelTaskBytag";
+constexpr char *kCancelAllTasks = "cancelAllTasks";
+constexpr char *kUnknown = "unknown";
 
-extern const char *kOnResultSendMethod;
-extern const char *kBackgroundChannelInitialized;
+constexpr char *kOnResultSendMethod = "onResultSend";
+constexpr char *kBackgroundChannelInitialized = "backgroundChannelInitialized";
 
-extern const char *kIsInDebugMode;
-extern const char *kCallbackhandle;
-extern const char *kFrequencySeconds;
-extern const char *kCancelTaskTag;
-extern const char *kCancelTaskUniqueName;
+constexpr char *kIsInDebugMode = "isInDebugMode";
+constexpr char *kCallbackhandle = "callbackHandle";
+constexpr char *kFrequencySeconds = "frequency";
+constexpr char *kCancelTaskTag = "tag";
+constexpr char *kCancelTaskUniqueName = "uniqueName";
 
-extern const char *kUniquename;
-extern const char *kNameValue;
-extern const char *kTag;
+constexpr char *kUniquename = "uniqueName";
+constexpr char *kNameValue = "taskName";
+constexpr char *kTag = "tag";
 
-extern const char *kConstraintsBundle;
-extern const char *kBackOffPolicyBundle;
+constexpr char *kConstraintsBundle = "constraintsBundle";
+constexpr char *kBackOffPolicyBundle = "backoffPolicyBundle";
 
-extern const char *kPayload;
-extern const char *kIsPeriodic;
+constexpr char *kPayload = "inputData";
+constexpr char *kIsPeriodic = "isPeriodic";
 
 struct JobInfo {
     JobInfo(bool is_debug_mode, std::string unique_name, std::string task_name,

@@ -9,34 +9,6 @@
 #include "log.h"
 #include "options.h"
 
-const char *kMethodNameKey = "methodName";
-const char *kInitialize = "initialize";
-const char *kRegisterOneOffTask = "registerOneOffTask";
-const char *kRegisterPeriodicTask = "registerPeriodicTask";
-const char *kCancelTaskByUniqueName = "cancelTaskByUniqueName";
-const char *kCancelTaskByTag = "cancelTaskBytag";
-const char *kCancelAllTasks = "cancelAllTasks";
-const char *kUnknown = "unknown";
-
-const char *kOnResultSendMethod = "onResultSend";
-const char *kBackgroundChannelInitialized = "backgroundChannelInitialized";
-
-const char *kIsInDebugMode = "isInDebugMode";
-const char *kCallbackhandle = "callbackHandle";
-const char *kFrequencySeconds = "frequency";
-const char *kCancelTaskTag = "tag";
-const char *kCancelTaskUniqueName = "uniqueName";
-
-const char *kUniquename = "uniqueName";
-const char *kNameValue = "taskName";
-const char *kTag = "tag";
-
-const char *kConstraintsBundle = "constraintsBundle";
-const char *kBackOffPolicyBundle = "backoffPolicyBundle";
-
-const char *kPayload = "inputData";
-const char *kIsPeriodic = "isPeriodic";
-
 void AddJobInfoToBundle(bundle *bund, const JobInfo &job_info) {
     bundle_add_byte(bund, kIsInDebugMode, &job_info.is_debug_mode,
                     sizeof(bool));
