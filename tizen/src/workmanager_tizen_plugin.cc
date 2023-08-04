@@ -483,7 +483,10 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
 
         } else if (method_name_str == kCancelTaskByUniqueName) {
             char *unique_name;
-            bundle_get_str(event_data, kUniquename, &unique_name);
+            int ret = bundle_get_str(event_data, kUniquename, &unique_name);
+            if(ret != BUNDLE_ERROR_NONE){
+                return;
+            }
 
             job_scheduler.CancelByUniqueName(unique_name);
 
