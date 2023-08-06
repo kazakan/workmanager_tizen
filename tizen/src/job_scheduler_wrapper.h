@@ -10,7 +10,6 @@
 #include "job.h"
 #include "options.h"
 
-constexpr const char* kPayloadPreferencePrefix = "WmPayload_";
 constexpr const char* kTaskInfoPreferencePrefix = "WmTaskInfo_";
 constexpr const char* kTaskInfoPreferenceSizePrefix = "WmTaskInfoSize_";
 
@@ -49,10 +48,8 @@ class JobScheduler {
     JobScheduler();
     ~JobScheduler() = default;
 
-    void SavePayload(const std::string& job_name, const std::string& payload);
     void SaveJobInfo(const JobInfo& job_info);
 
-    std::string GetPayloadKey(const std::string& job_name);
     std::string GetJobInfoKey(const std::string& job_name);
 };
 

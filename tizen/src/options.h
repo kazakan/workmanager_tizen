@@ -12,13 +12,6 @@ enum class NetworkType {
     kTemporarilyUnmetered,
 };
 
-enum class OutOfQuotaPolicy {
-    kRunAsNonExpeditedWorkRequest,
-    kDropWorkRequest,
-};
-
-enum class BackoffPolicy { kExponential, kLinear };
-
 struct Constraints {
     const NetworkType network_type;
 
@@ -38,14 +31,6 @@ struct Constraints {
           charging(charging),
           device_idle(device_idle),
           storage_not_low(storage_not_low) {}
-};
-
-struct BackoffPolicyTaskConfig {
-    BackoffPolicy backoff_policy;
-
-    int32_t request_backoff_delay;
-    int32_t min_backoff_mills;
-    int32_t backoff_delay;
 };
 
 #endif  // FLUTTER_PLUGIN_WORKMANAGER_OPTIONS_H_

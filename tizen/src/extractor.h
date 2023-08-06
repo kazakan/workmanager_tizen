@@ -12,9 +12,6 @@
 typedef flutter::MethodCall<flutter::EncodableValue> FlMethodCall;
 
 constexpr const char* kInitialDelaySeconds = "initialDelaySeconds";
-constexpr const char* kBackOffPolicyType = "backoffPolicyType";
-constexpr const char* kBackOffPolicyDelayMillis = "backoffDelayInMilliseconds";
-constexpr const char* kOutofQuotaPolicy = "outOfQuotaPolicy";
 constexpr const char* kExistingWorkpolicy = "existingWorkPolicy";
 
 constexpr const char* kNetworkType = "networkType";
@@ -37,34 +34,15 @@ constexpr const char* kKeep = "keep";
 constexpr const char* kAppend = "append";
 constexpr const char* kUpdate = "update";
 
-// BackOffPolicy
-constexpr const char* kExponential = "exponential";
-constexpr const char* kLinear = "linear";
-
-// OutofQuotaPolicy
-constexpr const char* kRunAsNonExpectedWorkRequest =
-    "run_as_non_expedited_work_request";
-constexpr const char* kDropWorkRequest = "drop_work_request";
-
 ExistingWorkPolicy StringToExistingWorkPolicy(const std::string &str);
 
-BackoffPolicy StringToBackoffPolicy(const std::string &str);
-
-OutOfQuotaPolicy StringToOutOfQuotaPolicy(const std::string &str);
-
-NetworkType StringToNetworkType(const std::string &str);
+NetworkType StringToNetworkType(const std::string& str);
 
 ExistingWorkPolicy ExtractExistingWorkPolicyFromMap(
-    const flutter::EncodableMap &map);
+    const flutter::EncodableMap& map);
 
-BackoffPolicyTaskConfig ExtractBackoffPolicyConfigFromMap(
-    const flutter::EncodableMap &map, int32_t minimum_backoff_delay);
+NetworkType ExtractNetworkTypeFromMap(const flutter::EncodableMap& args);
 
-OutOfQuotaPolicy ExtractOutOfQuotaPolicyFromMap(
-    const flutter::EncodableMap &map);
-
-NetworkType ExtractNetworkTypeFromMap(const flutter::EncodableMap &args);
-
-Constraints ExtractConstraintConfigFromMap(const flutter::EncodableMap &map);
+Constraints ExtractConstraintConfigFromMap(const flutter::EncodableMap& map);
 
 #endif

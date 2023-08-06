@@ -105,7 +105,6 @@ void JobScheduler::RegisterJob(const JobInfo& job_info,
                         LOG_ERROR("Failed to schedule job: %s",
                                   get_error_message(ret));
                     } else {
-                        SavePayload(job_info.unique_name, job_info.payload);
                         SaveJobInfo(job_info);
                         if (!callback) {
                             break;
@@ -121,7 +120,6 @@ void JobScheduler::RegisterJob(const JobInfo& job_info,
             LOG_ERROR("Failed to schedule job: %s", get_error_message(ret));
         }
     } else {
-        SavePayload(job_info.unique_name, job_info.payload);
         SaveJobInfo(job_info);
         if (callback) {
             SetCallback(job_info.unique_name.c_str(), callback);
@@ -142,7 +140,7 @@ void JobScheduler::CancelByUniqueName(const std::string& name) {
                   get_error_message(ret));
         return;
     }
-    preference_remove(GetPayloadKey(name).c_str());
+    preference_remove(GetJobInfoKey(name).c_str());
 
     job_scheduler_service_remove(job_service_handles_[name]);
     job_service_handles_.erase(name);
@@ -154,7 +152,7 @@ void JobScheduler::CancelAll() {
     job_scheduler_cancel_all();
 
     for (const auto& name : job_names) {
-        preference_remove(GetPayloadKey(name).c_str());
+        preference_remove(GetJobInfoKey(name).c_str());
     }
 
     for (const auto& items : job_service_handles_) {
@@ -197,15 +195,6 @@ std::vector<std::string> JobScheduler::GetAllJobs() {
     return jobs;
 }
 
-void JobScheduler::SavePayload(const std::string& job_name,
-                               const std::string& payload) {
-    const std::string payload_key = GetPayloadKey(job_name);
-    preference_set_string(payload_key.c_str(), payload.c_str());
-}
-
-std::string JobScheduler::GetPayloadKey(const std::string& job_name) {
-    return kPayloadPreferencePrefix + job_name;
-}
 
 void JobScheduler::SaveJobInfo(const JobInfo& job_info) {
     const std::string jobinfo_key = GetJobInfoKey(job_info.unique_name);

@@ -265,19 +265,14 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
 
             Constraints constraints_config =
                 ExtractConstraintConfigFromMap(map);
-            OutOfQuotaPolicy out_of_quota_policy =
-                ExtractOutOfQuotaPolicyFromMap(map);
-            BackoffPolicyTaskConfig backoff_policy_config =
-                ExtractBackoffPolicyConfigFromMap(
-                    map, is_periodic ? kMinBackOffPeriodic : kMinBackOffOneOff);
+           
             std::string payload =
                 GetOrNullFromEncodableMap<std::string>(&map, kPayload)
                     .value_or("");
 
             JobInfo job_info(is_debug_mode, unique_name, task_name,
                              existing_work_policy, initial_delay_seconds,
-                             constraints_config, backoff_policy_config,
-                             out_of_quota_policy, frequency_seconds, tag,
+                             constraints_config, frequency_seconds, tag,
                              payload, is_periodic);
 
             bundle *bund = bundle_create();
@@ -416,14 +411,10 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
     static void StartJobCallback(job_info_h job_info, void *user_data) {
         char *job_id = nullptr;
         job_info_get_job_id(job_info, &job_id);
+        auto& scheduler = JobScheduler::instance();
+        auto task_info = scheduler.LoadJobInfo(job_id).value();
 
-        std::string job_id_str(job_id);
-        std::string preference_key(kPayloadPreferencePrefix + job_id_str);
-
-        char *payload;
-        preference_get_string(preference_key.c_str(), &payload);
-
-        RunBackgroundCallback(job_id_str, payload);
+        RunBackgroundCallback(task_info.task_name, task_info.payload);
     }
 
     static void StopJobCallback(job_info_h job_info, void *user_data) {
@@ -482,9 +473,7 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
                     }
                 }
 
-                // implement more if possible
-
-                RunBackgroundCallback(job_info.unique_name, job_info.payload);
+                RunBackgroundCallback(job_info.task_name, job_info.payload);
             }
 
         } else if (method_name_str == kCancelTaskByUniqueName) {

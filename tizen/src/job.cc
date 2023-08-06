@@ -27,10 +27,6 @@ void AddJobInfoToBundle(bundle *bund, const JobInfo &job_info) {
 
     bundle_add_byte(bund, kConstraintsBundle, &job_info.constraints,
                     sizeof(Constraints));
-    bundle_add_byte(bund, kBackOffPolicyBundle, &job_info.backoff_policy,
-                    sizeof(BackoffPolicyTaskConfig));
-    bundle_add_byte(bund, kOutofQuotaPolicy, &job_info.out_of_quota_policy,
-                    sizeof(OutOfQuotaPolicy));
     bundle_add_byte(bund, kIsPeriodic, &job_info.is_periodic, sizeof(bool));
 }
 
@@ -50,8 +46,6 @@ JobInfo GetFromBundle(bundle *bund) {
     bool *is_periodic = nullptr;
 
     Constraints *constraints = nullptr;
-    BackoffPolicyTaskConfig *backoff_policy = nullptr;
-    OutOfQuotaPolicy *out_of_quota_policy = nullptr;
 
     bundle_get_byte(bund, kIsInDebugMode, (void **)&is_debug_mode, &size);
     bundle_get_str(bund, kUniquename, &unique_name);
@@ -68,14 +62,9 @@ JobInfo GetFromBundle(bundle *bund) {
     bundle_get_byte(bund, kIsPeriodic, (void **)&is_periodic, &size);
 
     bundle_get_byte(bund, kConstraintsBundle, (void **)&constraints, &size);
-    bundle_get_byte(bund, kBackOffPolicyBundle, (void **)&backoff_policy,
-                    &size);
-    bundle_get_byte(bund, kOutofQuotaPolicy, (void **)&out_of_quota_policy,
-                    &size);
     bundle_get_byte(bund, kIsPeriodic, (void **)&is_periodic, &size);
 
     return JobInfo(*is_debug_mode, unique_name, task_name,
                    *existing_work_policy, *initial_delay_seconds, *constraints,
-                   *backoff_policy, *out_of_quota_policy, *frequency_seconds,
-                   tag, payload, *is_periodic);
+                   *frequency_seconds, tag, payload, *is_periodic);
 }

@@ -33,7 +33,6 @@ constexpr const char* kNameValue = "taskName";
 constexpr const char* kTag = "tag";
 
 constexpr const char* kConstraintsBundle = "constraintsBundle";
-constexpr const char* kBackOffPolicyBundle = "backoffPolicyBundle";
 
 constexpr const char* kPayload = "inputData";
 constexpr const char* kIsPeriodic = "isPeriodic";
@@ -41,9 +40,7 @@ constexpr const char* kIsPeriodic = "isPeriodic";
 struct JobInfo {
     JobInfo(bool is_debug_mode, std::string unique_name, std::string task_name,
             ExistingWorkPolicy existing_work_policy,
-            int32_t initial_delay_seconds, Constraints constraints,
-            BackoffPolicyTaskConfig backoff_policy,
-            OutOfQuotaPolicy out_of_quota_policy, int32_t frequency_seconds = 0,
+            int32_t initial_delay_seconds, Constraints constraints, int32_t frequency_seconds = 0,
             std::string tag = "", std::string payload = "",
             bool is_periodic = false)
         : is_debug_mode(is_debug_mode),
@@ -54,8 +51,6 @@ struct JobInfo {
           constraints(constraints),
           payload(payload),
           frequency_seconds(frequency_seconds),
-          backoff_policy(backoff_policy),
-          out_of_quota_policy(out_of_quota_policy),
           is_periodic(is_periodic){};
 
     bool is_debug_mode;
@@ -66,8 +61,6 @@ struct JobInfo {
     Constraints constraints;
     std::string payload;
     ExistingWorkPolicy existing_work_policy;
-    BackoffPolicyTaskConfig backoff_policy;
-    OutOfQuotaPolicy out_of_quota_policy;
     int32_t frequency_seconds;
     bool is_periodic;
 };
