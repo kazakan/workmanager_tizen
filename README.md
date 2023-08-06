@@ -36,17 +36,24 @@ To use this plugin, you need to declare privileges in `tizen-manifest.xml` of yo
 
 - Galaxy Watch series (running Tizen 5.5 or above)
 
+## Supported APIs
+
+- [x] `Workmanager.registerOneOffTask`
+- [x] `Workmanager.registerPeriodicTask`
+- [x] `Workmanager.cancelAll`
+- [x] `Workmanager.cancelByUniqueName`
+- [ ] `Workmanager.cancelByTag` (Android only)
+
 ## Limitations
 
-This plugin does not support TV and TV emulations.
+- Both `Workmanager.registerOneOffTask` and `Workmanager.registerPeriodicTask` supports following options.
 
-The following options are not supported.
-- ``
-- ``
-- ``
+  - `frequency` (only in `Workmanager.registerPeriodicTask`), `unique_name`, `task_name`, `existingWorkPolicy`, `constraints`, `inputData`
+    - `keep`, `replace`  in `ExisitingWorkPolicy`
+    - `requiresBatteryNotLow`, `requiresCharging`, `networkType` options in `Constraints`
+      - `unmetered`, `connected` options in `NetworkType`
 
-This plugin only supports `multi` type of flutter-tizen application.
-
-`callbackDispatcher` should be entry point of service app.
-
-Service app name should be `"your_ui_app_name"+"_service"`
+- This plugin does not support TV and TV emulations.
+- This plugin only supports `multi` type of flutter-tizen application.
+- `callbackDispatcher` should be entry point of service app.
+- Service app name should be `"your_ui_app_name"+"_service"`
