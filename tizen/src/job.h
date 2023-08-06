@@ -10,33 +10,33 @@
 #include "log.h"
 #include "options.h"
 
-constexpr char *kMethodNameKey = "methodName";
-constexpr char *kInitialize = "initialize";
-constexpr char *kRegisterOneOffTask = "registerOneOffTask";
-constexpr char *kRegisterPeriodicTask = "registerPeriodicTask";
-constexpr char *kCancelTaskByUniqueName = "cancelTaskByUniqueName";
-constexpr char *kCancelTaskByTag = "cancelTaskBytag";
-constexpr char *kCancelAllTasks = "cancelAllTasks";
-constexpr char *kUnknown = "unknown";
+constexpr const char* kMethodNameKey = "methodName";
+constexpr const char* kInitialize = "initialize";
+constexpr const char* kRegisterOneOffTask = "registerOneOffTask";
+constexpr const char* kRegisterPeriodicTask = "registerPeriodicTask";
+constexpr const char* kCancelTaskByUniqueName = "cancelTaskByUniqueName";
+constexpr const char* kCancelTaskByTag = "cancelTaskBytag";
+constexpr const char* kCancelAllTasks = "cancelAllTasks";
+constexpr const char* kUnknown = "unknown";
 
-constexpr char *kOnResultSendMethod = "onResultSend";
-constexpr char *kBackgroundChannelInitialized = "backgroundChannelInitialized";
+constexpr const char* kOnResultSendMethod = "onResultSend";
+constexpr const char* kBackgroundChannelInitialized = "backgroundChannelInitialized";
 
-constexpr char *kIsInDebugMode = "isInDebugMode";
-constexpr char *kCallbackhandle = "callbackHandle";
-constexpr char *kFrequencySeconds = "frequency";
-constexpr char *kCancelTaskTag = "tag";
-constexpr char *kCancelTaskUniqueName = "uniqueName";
+constexpr const char* kIsInDebugMode = "isInDebugMode";
+constexpr const char* kCallbackhandle = "callbackHandle";
+constexpr const char* kFrequencySeconds = "frequency";
+constexpr const char* kCancelTaskTag = "tag";
+constexpr const char* kCancelTaskUniqueName = "uniqueName";
 
-constexpr char *kUniquename = "uniqueName";
-constexpr char *kNameValue = "taskName";
-constexpr char *kTag = "tag";
+constexpr const char* kUniquename = "uniqueName";
+constexpr const char* kNameValue = "taskName";
+constexpr const char* kTag = "tag";
 
-constexpr char *kConstraintsBundle = "constraintsBundle";
-constexpr char *kBackOffPolicyBundle = "backoffPolicyBundle";
+constexpr const char* kConstraintsBundle = "constraintsBundle";
+constexpr const char* kBackOffPolicyBundle = "backoffPolicyBundle";
 
-constexpr char *kPayload = "inputData";
-constexpr char *kIsPeriodic = "isPeriodic";
+constexpr const char* kPayload = "inputData";
+constexpr const char* kIsPeriodic = "isPeriodic";
 
 struct JobInfo {
     JobInfo(bool is_debug_mode, std::string unique_name, std::string task_name,

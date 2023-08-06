@@ -150,7 +150,6 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
             job_service_callback_s callback = {StartJobCallback,
                                                StopJobCallback};
             for (const auto &name : job_names) {
-                LOG_DEBUG("%s", name.c_str());
                 auto info = scheduler.LoadJobInfo(name);
                 if (!info.has_value()) {
                     continue;
@@ -158,18 +157,16 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
                 scheduler.CancelByUniqueName(name);
                 scheduler.RegisterJob(info.value(), &callback);
             }
-
-        } else {
-            auto foreground_channel = std::make_unique<FlMethodChannel>(
-                registrar->messenger(), kForegroundChannelName,
-                &flutter::StandardMethodCodec::GetInstance());
-
-            foreground_channel->SetMethodCallHandler(
-                [plugin_pointer = plugin.get()](const auto &call, auto result) {
-                    plugin_pointer->HandleWorkmanagerCall(call,
-                                                          std::move(result));
-                });
         }
+
+        auto foreground_channel = std::make_unique<FlMethodChannel>(
+            registrar->messenger(), kForegroundChannelName,
+            &flutter::StandardMethodCodec::GetInstance());
+
+        foreground_channel->SetMethodCallHandler(
+            [plugin_pointer = plugin.get()](const auto &call, auto result) {
+                plugin_pointer->HandleWorkmanagerCall(call, std::move(result));
+            });
 
         registrar->AddPlugin(std::move(plugin));
     }
@@ -202,16 +199,22 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
             }
 
             bundle_add_str(bund, kMethodNameKey, method_name.c_str());
-            int ret = event_publish_app_event(event_id.c_str(), bund);
-            bundle_free(bund);
 
-            if (ret != EVENT_ERROR_NONE) {
-                LOG_ERROR("Failed publich app event: %s",
-                          get_error_message(ret));
+            if (is_service_app_) {
+                TaskInfoCallback(nullptr, bund, nullptr);
+            } else {
+                int ret = event_publish_app_event(event_id.c_str(), bund);
 
-                result->Error(kOperationFailed, "Failed publish app event");
-                return;
+                if (ret != EVENT_ERROR_NONE) {
+                    LOG_ERROR("Failed publich app event: %s",
+                              get_error_message(ret));
+
+                    result->Error(kOperationFailed, "Failed publish app event");
+                    bundle_free(bund);
+                    return;
+                }
             }
+            bundle_free(bund);
 
             result->Success();
             return;
@@ -227,12 +230,14 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
         if (method_name == kInitialize) {
             bool isDebugMode =
                 std::get<bool>(map[flutter::EncodableValue(kIsInDebugMode)]);
+
             int64_t handle = std::get<int64_t>(
                 map[flutter::EncodableValue(kCallbackhandle)]);
 
             preference_set_int(kDispatcherHandle, handle);
 
-            if (!CheckAppIsRunning(service_app_id.c_str())) {
+            if (!is_service_app_ &&
+                !CheckAppIsRunning(service_app_id.c_str())) {
                 SendLaunchRequest(service_app_id.c_str());
             }
 
@@ -286,11 +291,18 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
 
             AddJobInfoToBundle(bund, job_info);
 
-            int ret = event_publish_app_event(event_id.c_str(), bund);
-            if (ret != EVENT_ERROR_NONE) {
-                LOG_ERROR("Failed publish event: %s", get_error_message(ret));
-                result->Error(kOperationFailed, "Error occured.");
-                return;
+            if (is_service_app_) {
+                TaskInfoCallback(nullptr, bund, nullptr);
+            } else {
+                int ret = event_publish_app_event(event_id.c_str(), bund);
+                if (ret != EVENT_ERROR_NONE) {
+                    LOG_ERROR("Failed publish event: %s",
+                              get_error_message(ret));
+                    result->Error(kOperationFailed, "Error occured.");
+
+                    bundle_free(bund);
+                    return;
+                }
             }
             bundle_free(bund);
 
@@ -312,14 +324,22 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
             bundle_add_str(bund, kMethodNameKey, method_name.c_str());
             bundle_add_str(bund, kCancelTaskByUniqueName, name.value().c_str());
 
-            int ret = event_publish_app_event(event_id.c_str(), bund);
-            bundle_free(bund);
+            if (is_service_app_) {
+                TaskInfoCallback(nullptr, bund, nullptr);
+            } else {
+                int ret = event_publish_app_event(event_id.c_str(), bund);
 
-            if (ret != BUNDLE_ERROR_NONE) {
-                LOG_ERROR("Failed publish event: %s", get_error_message(ret));
-                result->Error(kOperationFailed, "Failed Publish event.");
-                return;
+                if (ret != BUNDLE_ERROR_NONE) {
+                    LOG_ERROR("Failed publish event: %s",
+                              get_error_message(ret));
+                    result->Error(kOperationFailed, "Failed Publish event.");
+
+                    bundle_free(bund);
+                    return;
+                }
             }
+
+            bundle_free(bund);
 
             result->Success();
 
@@ -340,12 +360,17 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
             bundle_add_str(bund, kMethodNameKey, method_name.c_str());
             bundle_add_str(bund, kCancelTaskTag, tag.value().c_str());
 
-            int ret = event_publish_app_event(event_id.c_str(), bund);
-            if (ret != EVENT_ERROR_NONE) {
-                LOG_ERROR("Failed publish event: %s", get_error_message(ret));
-                result->Error(kOperationFailed, "Failed publish event.");
-                bundle_free(bund);
-                return;
+            if (is_service_app_) {
+                TaskInfoCallback(nullptr, bund, nullptr);
+            } else {
+                int ret = event_publish_app_event(event_id.c_str(), bund);
+                if (ret != EVENT_ERROR_NONE) {
+                    LOG_ERROR("Failed publish event: %s",
+                              get_error_message(ret));
+                    result->Error(kOperationFailed, "Failed publish event.");
+                    bundle_free(bund);
+                    return;
+                }
             }
 
             bundle_free(bund);

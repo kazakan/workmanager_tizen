@@ -10,9 +10,9 @@
 #include "job.h"
 #include "options.h"
 
-constexpr char* kPayloadPreferencePrefix = "WmPayload_";
-constexpr char* kTaskInfoPreferencePrefix = "WmTaskInfo_";
-constexpr char* kTaskInfoPreferenceSizePrefix = "WmTaskInfoSize_";
+constexpr const char* kPayloadPreferencePrefix = "WmPayload_";
+constexpr const char* kTaskInfoPreferencePrefix = "WmTaskInfo_";
+constexpr const char* kTaskInfoPreferenceSizePrefix = "WmTaskInfoSize_";
 
 class JobScheduler {
    public:

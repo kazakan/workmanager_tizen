@@ -11,40 +11,40 @@
 
 typedef flutter::MethodCall<flutter::EncodableValue> FlMethodCall;
 
-constexpr char *kInitialDelaySeconds = "initialDelaySeconds";
-constexpr char *kBackOffPolicyType = "backoffPolicyType";
-constexpr char *kBackOffPolicyDelayMillis = "backoffDelayInMilliseconds";
-constexpr char *kOutofQuotaPolicy = "outOfQuotaPolicy";
-constexpr char *kExistingWorkpolicy = "existingWorkPolicy";
+constexpr const char* kInitialDelaySeconds = "initialDelaySeconds";
+constexpr const char* kBackOffPolicyType = "backoffPolicyType";
+constexpr const char* kBackOffPolicyDelayMillis = "backoffDelayInMilliseconds";
+constexpr const char* kOutofQuotaPolicy = "outOfQuotaPolicy";
+constexpr const char* kExistingWorkpolicy = "existingWorkPolicy";
 
-constexpr char *kNetworkType = "networkType";
-constexpr char *kBatteryNotLow = "requiresBatteryNotLow";
-constexpr char *kCharging = "requiresCharging";
-constexpr char *kDeviceidle = "requiresDeviceIdle";
-constexpr char *kStorageNotLow = "requiresStorageNotLow";
+constexpr const char* kNetworkType = "networkType";
+constexpr const char* kBatteryNotLow = "requiresBatteryNotLow";
+constexpr const char* kCharging = "requiresCharging";
+constexpr const char* kDeviceidle = "requiresDeviceIdle";
+constexpr const char* kStorageNotLow = "requiresStorageNotLow";
 
 // NetworkType
-constexpr char *kConnected = "connectd";
-constexpr char *kMetered = "metered";
-constexpr char *kNotRequired = "not_required";
-constexpr char *kNotRoaming = "not_roaming";
-constexpr char *kUnmetered = "unmetered";
-constexpr char *kTemporarilyUnmetered = "temporarily_unmetered";
+constexpr const char* kConnected = "connectd";
+constexpr const char* kMetered = "metered";
+constexpr const char* kNotRequired = "not_required";
+constexpr const char* kNotRoaming = "not_roaming";
+constexpr const char* kUnmetered = "unmetered";
+constexpr const char* kTemporarilyUnmetered = "temporarily_unmetered";
 
 // ExistingWorkPolicy
-constexpr char *kReplace = "replace";
-constexpr char *kKeep = "keep";
-constexpr char *kAppend = "append";
-constexpr char *kUpdate = "update";
+constexpr const char* kReplace = "replace";
+constexpr const char* kKeep = "keep";
+constexpr const char* kAppend = "append";
+constexpr const char* kUpdate = "update";
 
 // BackOffPolicy
-constexpr char *kExponential = "exponential";
-constexpr char *kLinear = "linear";
+constexpr const char* kExponential = "exponential";
+constexpr const char* kLinear = "linear";
 
 // OutofQuotaPolicy
-constexpr char *kRunAsNonExpectedWorkRequest =
+constexpr const char* kRunAsNonExpectedWorkRequest =
     "run_as_non_expedited_work_request";
-constexpr char *kDropWorkRequest = "drop_work_request";
+constexpr const char* kDropWorkRequest = "drop_work_request";
 
 ExistingWorkPolicy StringToExistingWorkPolicy(const std::string &str);
 
