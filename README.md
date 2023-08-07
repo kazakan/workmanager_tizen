@@ -46,12 +46,13 @@ To use this plugin, you need to declare privileges in `tizen-manifest.xml` of yo
 
 ## Limitations
 
-- Both `Workmanager.registerOneOffTask` and `Workmanager.registerPeriodicTask` supports following options.
+- `Workmanager.registerOneOffTask` and `Workmanager.registerPeriodicTask` supports following options.
 
-  - `frequency` (only in `Workmanager.registerPeriodicTask`), `unique_name`, `task_name`, `existingWorkPolicy`, `constraints`, `inputData`
-    - `keep`, `replace`  in `ExisitingWorkPolicy`
-    - `requiresBatteryNotLow`, `requiresCharging`, `networkType` options in `Constraints`
-      - `unmetered`, `connected` options in `NetworkType`
+  - `unique_name`, `task_name`, `existingWorkPolicy`, `constraints`, `inputData`
+  - `requiresBatteryNotLow`, `requiresCharging`, `networkType` in `Constraints`
+  - `unmetered`, `connected` values in `NetworkType`
+  - `keep`, `replace`  values in `ExisitingWorkPolicy`
+  - `frequency` (`Workmanager.registerPeriodicTask` only)
 
 - This plugin does not support TV and TV emulations.
 - This plugin only supports `multi` type of flutter-tizen application.
