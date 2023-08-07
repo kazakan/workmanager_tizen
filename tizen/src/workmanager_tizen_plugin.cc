@@ -11,6 +11,7 @@
 #include <flutter/plugin_registrar.h>
 #include <flutter/standard_method_codec.h>
 #include <job_scheduler.h>
+#include <net_connection.h>
 #include <system_info.h>
 #include <tizen.h>
 #include <unistd.h>
@@ -265,7 +266,7 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
 
             Constraints constraints_config =
                 ExtractConstraintConfigFromMap(map);
-           
+
             std::string payload =
                 GetOrNullFromEncodableMap<std::string>(&map, kPayload)
                     .value_or("");
@@ -411,7 +412,7 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
     static void StartJobCallback(job_info_h job_info, void *user_data) {
         char *job_id = nullptr;
         job_info_get_job_id(job_info, &job_id);
-        auto& scheduler = JobScheduler::instance();
+        auto &scheduler = JobScheduler::instance();
         auto task_info = scheduler.LoadJobInfo(job_id).value();
 
         RunBackgroundCallback(task_info.task_name, task_info.payload);
@@ -471,6 +472,20 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
                     if (!charging) {
                         return;
                     }
+                }
+
+                switch (job_info.constraints.network_type) {
+                    case NetworkType::kUnmetered:
+                    case NetworkType::kConnected:
+                        connection_h conn = nullptr;
+                        connection_wifi_state_e wifi_state;
+                        connection_create(&conn);
+                        connection_get_wifi_state(conn, &wifi_state);
+                        connection_destroy(conn);
+
+                        if (wifi_state != CONNECTION_WIFI_STATE_CONNECTED) {
+                            return;
+                        }
                 }
 
                 RunBackgroundCallback(job_info.task_name, job_info.payload);
