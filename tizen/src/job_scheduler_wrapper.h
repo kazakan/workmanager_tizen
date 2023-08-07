@@ -29,8 +29,6 @@ class JobScheduler {
     void RegisterJob(const JobInfo& job_info,
                      job_service_callback_s* callback = nullptr);
 
-    void CancelByTag(const std::string& task);
-
     void CancelByUniqueName(const std::string& name);
 
     void CancelAll();

@@ -129,10 +129,6 @@ void JobScheduler::RegisterJob(const JobInfo& job_info,
     job_info_destroy(job_handle);
 }
 
-void JobScheduler::CancelByTag(const std::string& task) {
-    // Not supported
-}
-
 void JobScheduler::CancelByUniqueName(const std::string& name) {
     int ret = job_scheduler_cancel(name.c_str());
     if (ret != JOB_ERROR_NONE) {

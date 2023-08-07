@@ -338,41 +338,6 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
             bundle_free(bund);
 
             result->Success();
-
-        } else if (method_name == kCancelTaskByTag) {
-            auto tag =
-                GetOrNullFromEncodableMap<std::string>(&map, kCancelTaskTag);
-            if (!tag.has_value()) {
-                result->Error(kInvalidArg, "No tag provided");
-                return;
-            }
-
-            bundle *bund = bundle_create();
-            if (!bund) {
-                LOG_ERROR("Failed create bundle");
-                result->Error(kOperationFailed, "Failed Creating bundle.");
-            }
-
-            bundle_add_str(bund, kMethodNameKey, method_name.c_str());
-            bundle_add_str(bund, kCancelTaskTag, tag.value().c_str());
-
-            if (is_service_app_) {
-                TaskInfoCallback(nullptr, bund, nullptr);
-            } else {
-                int ret = event_publish_app_event(event_id.c_str(), bund);
-                if (ret != EVENT_ERROR_NONE) {
-                    LOG_ERROR("Failed publish event: %s",
-                              get_error_message(ret));
-                    result->Error(kOperationFailed, "Failed publish event.");
-                    bundle_free(bund);
-                    return;
-                }
-            }
-
-            bundle_free(bund);
-
-            result->Success();
-
         } else {
             result->NotImplemented();
         }
