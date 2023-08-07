@@ -253,8 +253,6 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
                 map[flutter::EncodableValue(kUniquename)]);
             std::string task_name =
                 std::get<std::string>(map[flutter::EncodableValue(kNameValue)]);
-            std::string tag =
-                GetOrNullFromEncodableMap<std::string>(&map, kTag).value_or("");
             ExistingWorkPolicy existing_work_policy =
                 ExtractExistingWorkPolicyFromMap(map);
             int32_t initial_delay_seconds =
@@ -273,8 +271,8 @@ class WorkmanagerTizenPlugin : public flutter::Plugin {
 
             JobInfo job_info(is_debug_mode, unique_name, task_name,
                              existing_work_policy, initial_delay_seconds,
-                             constraints_config, frequency_seconds, tag,
-                             payload, is_periodic);
+                             constraints_config, frequency_seconds, payload,
+                             is_periodic);
 
             bundle *bund = bundle_create();
 
