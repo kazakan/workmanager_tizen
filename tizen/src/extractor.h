@@ -21,7 +21,7 @@ constexpr const char* kDeviceidle = "requiresDeviceIdle";
 constexpr const char* kStorageNotLow = "requiresStorageNotLow";
 
 // NetworkType
-constexpr const char* kConnected = "connectd";
+constexpr const char* kConnected = "connected";
 constexpr const char* kMetered = "metered";
 constexpr const char* kNotRequired = "not_required";
 constexpr const char* kNotRoaming = "not_roaming";
