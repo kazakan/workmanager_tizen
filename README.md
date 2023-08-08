@@ -38,6 +38,8 @@ To use this plugin, you need to declare privileges in `tizen-manifest.xml` of yo
 
 ## Supported APIs
 
+- [x] `Workmanager.initialize`
+- [x] `Workmanager.executeTask`
 - [x] `Workmanager.registerOneOffTask`
 - [x] `Workmanager.registerPeriodicTask`
 - [x] `Workmanager.cancelAll`
